@@ -47,26 +47,28 @@ export default function Cart() {
   return (
     <View className="cart-page">
       <ScrollView className="cart-list" scrollY>
-        {items.map((item) => (
-          <View className="cart-item" key={item.id}>
-            <View 
-              className={`checkbox ${item.selected ? 'checked' : ''}`}
-              onClick={() => toggleSelect(item.id)}
-            ></View>
-            <Image className="item-img" src={item.imageUrl} mode="aspectFill" />
-            <View className="item-info">
-              <View className="name">{item.name}</View>
-              <View className="bottom-row">
-                <Text className="price">¥{item.price.toFixed(1)}</Text>
-                <View className="quantity-control">
-                  <View className="btn" onClick={() => updateQuantity(item.id, item.quantity - 1)}>-</View>
-                  <Text className="num">{item.quantity}</Text>
-                  <View className="btn" onClick={() => updateQuantity(item.id, item.quantity + 1)}>+</View>
+        <View className="cart-list-inner">
+          {items.map((item) => (
+            <View className="cart-item" key={item.id}>
+              <View 
+                className={`checkbox ${item.selected ? 'checked' : ''}`}
+                onClick={() => toggleSelect(item.id)}
+              ></View>
+              <Image className="item-img" src={item.imageUrl} mode="aspectFill" />
+              <View className="item-info">
+                <View className="name">{item.name}</View>
+                <View className="bottom-row">
+                  <Text className="price">¥{item.price.toFixed(1)}</Text>
+                  <View className="quantity-control">
+                    <View className="btn" onClick={() => updateQuantity(item.id, item.quantity - 1)}>-</View>
+                    <Text className="num">{item.quantity}</Text>
+                    <View className="btn" onClick={() => updateQuantity(item.id, item.quantity + 1)}>+</View>
+                  </View>
                 </View>
               </View>
             </View>
-          </View>
-        ))}
+          ))}
+        </View>
       </ScrollView>
 
       <View className="bottom-bar">

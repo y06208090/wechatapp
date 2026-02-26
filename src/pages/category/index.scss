@@ -63,8 +63,11 @@
 .product-list {
   flex: 1;
   background-color: #fff;
-  padding: 10px;
   overflow-y: auto;
+
+  .product-list-inner {
+    padding: 10px;
+  }
 
   .product-item {
     display: flex;

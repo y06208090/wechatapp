@@ -26,8 +26,7 @@ export const mockCategories: Category[] = [
         name: "【添加10%香水椰】小象100%椰子水1L",
         desc: "配料仅椰子水 | 口感清冽甘甜",
         price: 9.9,
-        imageUrl:
-          "https://img14.360buyimg.com/n0/jfs/t1/210331/2/23602/125215/6287042aEa8c45969/6fada5a94ad8fb03.jpg",
+        imageUrl: 'https://dummyimage.com/200x200/00b26a/ffffff.png&text=%E6%A4%B0%E5%AD%90%E6%B0%B4',
         tags: ["新品"],
         salesTag: "近期销量飙升57%",
         stock: 100,
@@ -38,8 +37,7 @@ export const mockCategories: Category[] = [
         desc: "天然植物蛋白 | 非转基因大豆",
         price: 11.9,
         originalPrice: 13.5,
-        imageUrl:
-          "https://img14.360buyimg.com/n1/jfs/t1/111867/4/33923/102062/63da2237F02888463/e2ad3b81d86d2ebc.jpg",
+        imageUrl: 'https://dummyimage.com/200x200/00b26a/ffffff.png&text=%E8%B1%86%E5%A5%B6',
         tags: ["新品", "秒杀价"],
         salesTag: "近期销量飙升112%",
         stock: 50,
@@ -50,8 +48,7 @@ export const mockCategories: Category[] = [
         desc: "锡兰红茶 | 醇香可口",
         price: 15.8,
         originalPrice: 26.9,
-        imageUrl:
-          "https://img14.360buyimg.com/n1/jfs/t1/218057/2/22718/125433/6283bbaeE4bafeb08/7d3639a03195ed84.jpg",
+        imageUrl: 'https://dummyimage.com/200x200/00b26a/ffffff.png&text=%E5%A5%B6%E8%8C%B6',
         tags: ["新品", "5.9折"],
         salesTag: "近期销量飙升57%",
         stock: 200,
@@ -62,8 +59,7 @@ export const mockCategories: Category[] = [
         desc: "充足果味 | 好喝适口",
         price: 4.2,
         originalPrice: 5.5,
-        imageUrl:
-          "https://img14.360buyimg.com/n1/jfs/t1/181514/23/15160/125215/60f7e6f8Eb149024f/1f81d8ab1f8ad155.jpg",
+        imageUrl: 'https://dummyimage.com/200x200/00b26a/ffffff.png&text=%E6%9E%9C%E6%B1%81',
         tags: ["新品", "8折"],
         salesTag: "近期销量飙升65%",
         stock: 80,
@@ -80,8 +76,7 @@ export const mockCategories: Category[] = [
         desc: "水源地灌装 | 家庭量贩装",
         price: 15.8,
         originalPrice: 21.8,
-        imageUrl:
-          "https://img14.360buyimg.com/n1/jfs/t1/139209/7/5971/105740/5f3faac2E3bfeee89/8ebaeafb3cb3db6f.jpg",
+        imageUrl: 'https://dummyimage.com/200x200/00b26a/ffffff.png&text=%E5%A4%A9%E7%84%B6%E6%B0%B4',
         tags: ["43%人回购"],
         stock: 50,
       },
@@ -91,8 +86,7 @@ export const mockCategories: Category[] = [
         desc: "蹦跳鲜到家 | 12道品控",
         price: 31.92,
         originalPrice: 43.8,
-        imageUrl:
-          "https://img10.360buyimg.com/n1/s450x450_jfs/t1/222129/6/15720/191264/61a34b22Eab9c1ae0/644cb3db6ea99b79.jpg",
+        imageUrl: 'https://dummyimage.com/200x200/00b26a/ffffff.png&text=%E5%9F%BA%E5%9B%B4%E8%99%BE',
         tags: ["活鲜", "出清价"],
         stock: 10,
       },
@@ -115,7 +109,7 @@ export const mockCategories: Category[] = [
 export const mockUser = {
   name: "小象士兵",
   avatar:
-    "https://img12.360buyimg.com/img/s100x100_jfs/t1/193233/39/16477/4060/6109fdecEa775cdb2/692bed795be2466b.png",
+    "https://img12.360buyimg.com/n1/s100x100_jfs/t1/181514/23/15160/125215/60f7e6f8Eb149024f/1f81d8ab1f8ad155.jpg",
   balance: 100.0,
   coupons: 3,
 };

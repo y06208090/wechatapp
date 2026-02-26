@@ -35,7 +35,9 @@
 }
 
 .cart-list {
-  padding: 15px;
+  .cart-list-inner {
+    padding: 15px;
+  }
 
   .cart-item {
     display: flex;
