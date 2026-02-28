@@ -1,0 +1,94 @@
+.address-page {
+    min-height: 100vh;
+    background-color: #f7f8fa;
+    display: flex;
+    flex-direction: column;
+
+    .address-list {
+        flex: 1;
+        padding: 20rpx;
+        box-sizing: border-box;
+        padding-bottom: 120rpx;
+
+        .address-item {
+            background-color: #fff;
+            border-radius: 16rpx;
+            padding: 30rpx;
+            margin-bottom: 20rpx;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            .info {
+                flex: 1;
+
+                .user-info {
+                    display: flex;
+                    align-items: center;
+                    margin-bottom: 12rpx;
+
+                    .name {
+                        font-size: 32rpx;
+                        font-weight: bold;
+                        color: #333;
+                        margin-right: 20rpx;
+                    }
+
+                    .phone {
+                        font-size: 28rpx;
+                        color: #666;
+                        margin-right: 20rpx;
+                    }
+
+                    .default-tag {
+                        background-color: #e6f6ee;
+                        color: #00B26A;
+                        font-size: 20rpx;
+                        padding: 4rpx 10rpx;
+                        border-radius: 4rpx;
+                    }
+                }
+
+                .detail {
+                    font-size: 28rpx;
+                    color: #333;
+                    line-height: 1.4;
+                }
+            }
+
+            .edit-icon {
+                font-size: 36rpx;
+                color: #999;
+                padding-left: 30rpx;
+                border-left: 1rpx solid #f0f0f0;
+            }
+        }
+    }
+
+    .bottom-btn {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 20rpx 30rpx 40rpx;
+        background-color: #fff;
+        box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.05);
+
+        .add-btn {
+            background-color: #00B26A;
+            color: #fff;
+            font-size: 32rpx;
+            height: 88rpx;
+            line-height: 88rpx;
+            border-radius: 44rpx;
+
+            &::after {
+                border: none;
+            }
+
+            &:active {
+                background-color: #00995a;
+            }
+        }
+    }
+}

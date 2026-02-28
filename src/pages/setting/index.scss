@@ -1,0 +1,56 @@
+.setting-page {
+    min-height: 100vh;
+    background-color: #f7f8fa;
+    padding-top: 20rpx;
+
+    .setting-group {
+        background-color: #fff;
+        margin-bottom: 20rpx;
+
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 30rpx 40rpx;
+            border-bottom: 1rpx solid #f0f0f0;
+
+            &:last-child {
+                border-bottom: none;
+            }
+
+            .title {
+                font-size: 30rpx;
+                color: #333;
+            }
+
+            .desc {
+                font-size: 28rpx;
+                color: #999;
+            }
+
+            .arrow {
+                font-size: 28rpx;
+                color: #ccc;
+                font-family: monospace;
+            }
+        }
+    }
+
+    .logout-btn {
+        margin: 40rpx 40rpx;
+        background-color: #fff;
+        color: #ff4d4f;
+        font-size: 32rpx;
+        font-weight: 500;
+        line-height: 96rpx;
+        border-radius: 16rpx;
+
+        &::after {
+            border: none;
+        }
+
+        &:active {
+            background-color: #f0f0f0;
+        }
+    }
+}

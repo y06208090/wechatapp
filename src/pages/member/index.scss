@@ -1,0 +1,70 @@
+.member-page {
+    min-height: 100vh;
+    background-color: #f7f8fa;
+    padding: 30rpx;
+
+    .vip-card {
+        background: linear-gradient(135deg, #FFD700, #DAA520);
+        border-radius: 20rpx;
+        padding: 40rpx;
+        color: #fff;
+        box-shadow: 0 10rpx 20rpx rgba(218, 165, 32, 0.3);
+
+        .title {
+            font-size: 36rpx;
+            font-weight: bold;
+            margin-bottom: 10rpx;
+        }
+
+        .subtitle {
+            font-size: 24rpx;
+            margin-bottom: 30rpx;
+        }
+
+        .progress-bar {
+            height: 12rpx;
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 6rpx;
+            overflow: hidden;
+
+            .inner {
+                height: 100%;
+                background-color: #fff;
+                border-radius: 6rpx;
+            }
+        }
+    }
+
+    .rights-section {
+        margin-top: 40rpx;
+        background-color: #fff;
+        border-radius: 20rpx;
+        padding: 30rpx;
+
+        .section-title {
+            font-size: 32rpx;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 30rpx;
+        }
+
+        .rights-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20rpx;
+
+            .right-item {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                font-size: 24rpx;
+                color: #666;
+
+                .icon {
+                    font-size: 60rpx;
+                    margin-bottom: 10rpx;
+                }
+            }
+        }
+    }
+}

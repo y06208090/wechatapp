@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { View, Text, Image, ScrollView, Input } from '@tarojs/components'
+import { View, Text, Image, ScrollView, Input, Navigator } from '@tarojs/components'
 import { mockCategories, Product } from '../../mock/data'
 import { useCart } from '../../store/CartContext'
 import Taro from '@tarojs/taro'
@@ -10,7 +10,7 @@ export default function Category() {
   const { addItem } = useCart()
 
   const activeCategory = mockCategories.find((c) => c.id === activeCategoryId)
-  const products = activeCategory?.products || []
+  const products = (activeCategory && activeCategory.products) || []
 
   const handleAddCart = (e: any, product: Product) => {
     e.stopPropagation();
@@ -27,6 +27,19 @@ export default function Category() {
       <View className="search-bar">
         <Input className="search-input" placeholder="解腻水饮料好喝无腹忧" />
       </View>
+
+      <Navigator url="/pages/courier/index" className="courier-banner">
+        <View className="courier-banner-left">
+          <View className="icon-wrapper">
+            <Text className="icon">📦</Text>
+          </View>
+          <View className="text-info">
+            <Text className="banner-title">顺路代取快递</Text>
+            <Text className="banner-subtitle">随时下单，最快30分钟送达桌前</Text>
+          </View>
+        </View>
+        <View className="courier-banner-right">立即下单 <Text className="arrow">{'>'}</Text></View>
+      </Navigator>
 
       <View className="main-content">
         <ScrollView className="sidebar" scrollY>
@@ -52,7 +65,7 @@ export default function Category() {
                       <View className="name">{product.name}</View>
                       <View className="desc">{product.desc}</View>
                       <View className="tags">
-                        {product.tags?.map((tag, index) => (
+                        {product.tags && product.tags.map((tag, index) => (
                           <Text key={index} className="tag">{tag}</Text>
                         ))}
                         {product.salesTag && (

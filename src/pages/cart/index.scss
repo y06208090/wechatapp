@@ -58,7 +58,7 @@
         border-color: #00B26A;
         background-color: #00B26A;
         position: relative;
-        
+
         &::after {
           content: '';
           position: absolute;
@@ -162,7 +162,7 @@
         border-color: #00B26A;
         background-color: #00B26A;
         position: relative;
-        
+
         &::after {
           content: '';
           position: absolute;
@@ -215,6 +215,36 @@
       &.active {
         background-color: #ff5000;
       }
+    }
+  }
+}
+
+.free-shipping-tip {
+  position: fixed;
+  bottom: 60px;
+  left: 0;
+  right: 0;
+  height: 30px;
+  background-color: #e8fff5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99;
+  border-top: 1px solid #ccffe3;
+
+  .icon {
+    font-size: 14px;
+    margin-right: 4px;
+  }
+
+  .text {
+    font-size: 12px;
+    color: #333;
+
+    .highlight {
+      color: #00B26A;
+      font-weight: 600;
+      margin: 0 2px;
     }
   }
 }

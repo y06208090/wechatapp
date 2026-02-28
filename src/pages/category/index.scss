@@ -22,6 +22,112 @@
   }
 }
 
+.courier-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #ffffff;
+  margin: 0 30rpx 24rpx;
+  padding: 24rpx 28rpx;
+  border-radius: 20rpx;
+  box-shadow: 0 16rpx 32rpx -12rpx rgba(0, 178, 106, 0.12), 0 4rpx 12rpx -4rpx rgba(0, 0, 0, 0.03);
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    content: '';
+    position: absolute;
+    right: -20rpx;
+    top: -40rpx;
+    width: 160rpx;
+    height: 160rpx;
+    background: linear-gradient(135deg, rgba(0, 178, 106, 0.05) 0%, rgba(0, 214, 128, 0.15) 100%);
+    border-radius: 50%;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .courier-banner-left {
+    display: flex;
+    align-items: center;
+    z-index: 2;
+
+    .icon-wrapper {
+      width: 76rpx;
+      height: 76rpx;
+      background: linear-gradient(135deg, #e8fff5 0%, #ccffe3 100%);
+      border-radius: 20rpx;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-right: 24rpx;
+      box-shadow: inset 0 2rpx 4rpx rgba(255, 255, 255, 0.8);
+
+      .icon {
+        font-size: 40rpx;
+      }
+    }
+
+    .text-info {
+      display: flex;
+      flex-direction: column;
+
+      .banner-title {
+        font-size: 32rpx;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin-bottom: 6rpx;
+        display: flex;
+        align-items: center;
+
+        &::after {
+          content: 'HOT';
+          font-size: 16rpx;
+          color: #fff;
+          background: linear-gradient(90deg, #ff6b6b, #ff4d4f);
+          padding: 2rpx 8rpx;
+          border-radius: 6rpx 6rpx 6rpx 0;
+          margin-left: 12rpx;
+          font-weight: 600;
+          line-height: 1.2;
+        }
+      }
+
+      .banner-subtitle {
+        font-size: 22rpx;
+        color: #8c8c8c;
+        font-weight: 400;
+      }
+    }
+  }
+
+  .courier-banner-right {
+    z-index: 2;
+    background: linear-gradient(135deg, #00B26A 0%, #00995a 100%);
+    color: #fff;
+    font-size: 24rpx;
+    padding: 12rpx 32rpx;
+    border-radius: 30rpx;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 6rpx 16rpx rgba(0, 178, 106, 0.3);
+    transition: all 0.2s ease;
+
+    &:active {
+      transform: scale(0.96);
+      box-shadow: 0 2rpx 8rpx rgba(0, 178, 106, 0.2);
+    }
+
+    .arrow {
+      font-family: system-ui, -apple-system, sans-serif;
+      margin-left: 6rpx;
+      font-size: 20rpx;
+      font-weight: 800;
+    }
+  }
+}
+
 .main-content {
   display: flex;
   flex: 1;
@@ -123,6 +229,7 @@
           border-radius: 4px;
         }
       }
+
 
       .price-row {
         display: flex;

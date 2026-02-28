@@ -1,0 +1,65 @@
+.merchant-page {
+    min-height: 100vh;
+    background-color: #f7f8fa;
+
+    .header {
+        background: linear-gradient(135deg, #00B26A, #00d680);
+        padding: 80rpx 40rpx;
+        color: #fff;
+
+        .title {
+            font-size: 48rpx;
+            font-weight: bold;
+            margin-bottom: 20rpx;
+        }
+
+        .subtitle {
+            font-size: 28rpx;
+            opacity: 0.9;
+        }
+    }
+
+    .form {
+        background-color: #fff;
+        border-radius: 20rpx;
+        margin: -40rpx 30rpx 0;
+        padding: 20rpx 40rpx 40rpx;
+        box-shadow: 0 10rpx 20rpx rgba(0, 0, 0, 0.05);
+        position: relative;
+
+        .form-item {
+            display: flex;
+            align-items: center;
+            padding: 30rpx 0;
+            border-bottom: 1rpx solid #f0f0f0;
+
+            .label {
+                width: 160rpx;
+                font-size: 30rpx;
+                color: #333;
+            }
+
+            input {
+                flex: 1;
+                font-size: 30rpx;
+                color: #333;
+            }
+        }
+
+        .submit-btn {
+            margin-top: 60rpx;
+            background-color: #00B26A;
+            color: #fff;
+            font-size: 32rpx;
+            border-radius: 44rpx;
+
+            &::after {
+                border: none;
+            }
+
+            &:active {
+                background-color: #00995a;
+            }
+        }
+    }
+}

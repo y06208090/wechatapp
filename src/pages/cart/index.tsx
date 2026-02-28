@@ -33,9 +33,9 @@ export default function Cart() {
     return (
       <View className="cart-page">
         <View className="empty-cart">
-          <Image 
-            className="empty-icon" 
-            src="https://img12.360buyimg.com/img/s240x240_jfs/t1/181467/20/19052/15392/611a133fEbb8119eb/b2ab91fe9da248fd.png" 
+          <Image
+            className="empty-icon"
+            src="https://img12.360buyimg.com/img/s240x240_jfs/t1/181467/20/19052/15392/611a133fEbb8119eb/b2ab91fe9da248fd.png"
           />
           <Text className="empty-text">您的购物车还空着呢~快去逛逛吧</Text>
           <View className="go-shopping-btn" onClick={goShopping}>去逛逛</View>
@@ -50,7 +50,7 @@ export default function Cart() {
         <View className="cart-list-inner">
           {items.map((item) => (
             <View className="cart-item" key={item.id}>
-              <View 
+              <View
                 className={`checkbox ${item.selected ? 'checked' : ''}`}
                 onClick={() => toggleSelect(item.id)}
               ></View>
@@ -71,6 +71,13 @@ export default function Cart() {
         </View>
       </ScrollView>
 
+      {items.length > 0 && (
+        <View className="free-shipping-tip">
+          <Text className="icon">📍</Text>
+          <Text className="text">当前距门店 2.8km，🎉<Text className="highlight">享受 3km 内免配送费</Text>特权！</Text>
+        </View>
+      )}
+
       <View className="bottom-bar">
         <View className="select-all" onClick={toggleSelectAll}>
           <View className={`checkbox ${isAllSelected ? 'checked' : ''}`}></View>
@@ -81,7 +88,7 @@ export default function Cart() {
             <Text className="label">合计: </Text>
             <Text className="price">¥{totalPrice.toFixed(2)}</Text>
           </View>
-          <View 
+          <View
             className={`checkout-btn ${totalPrice > 0 ? 'active' : ''}`}
             onClick={handleCheckout}
           >

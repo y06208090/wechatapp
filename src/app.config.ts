@@ -2,7 +2,14 @@ export default defineAppConfig({
   pages: [
     'pages/category/index',
     'pages/cart/index',
-    'pages/profile/index'
+    'pages/profile/index',
+    'pages/courier/index',
+    'pages/order/index',
+    'pages/courier-order/index',
+    'pages/member/index',
+    'pages/address/index',
+    'pages/merchant/index',
+    'pages/setting/index'
   ],
   window: {
     backgroundTextStyle: 'light',
