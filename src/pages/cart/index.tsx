@@ -1,5 +1,4 @@
-import React from 'react'
-import { View, Text, Image, ScrollView, Button } from '@tarojs/components'
+import { View, Text, Image, ScrollView } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { useCart } from '../../store/CartContext'
 import './index.scss'
@@ -15,12 +14,14 @@ export default function Cart() {
   } = useCart()
 
   const handleCheckout = () => {
-    if (totalPrice === 0) return;
-    Taro.showToast({
-      title: '结算成功 (Mock)',
-      icon: 'success',
-      duration: 1500,
-    });
+    const selectedItemsCount = items.filter(item => item.selected).length;
+    if (selectedItemsCount === 0) {
+      Taro.showToast({ title: '尚未选择商品', icon: 'none' })
+      return
+    }
+    Taro.navigateTo({
+      url: '/pages/checkout/index'
+    })
   }
 
   const goShopping = () => {

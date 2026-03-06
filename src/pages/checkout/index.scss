@@ -1,0 +1,238 @@
+.checkout-page {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: #f7f8fa;
+
+    .content {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20rpx;
+        padding-bottom: 40rpx;
+    }
+}
+
+.empty-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #999;
+
+    button {
+        margin-top: 40rpx;
+        background: #00B26A;
+        color: #fff;
+        border-radius: 40rpx;
+        padding: 0 40rpx;
+    }
+}
+
+// 模拟信封彩条边框
+.address-line {
+    height: 4rpx;
+    background-image: repeating-linear-gradient(-45deg,
+            #ff6c6c 0, #ff6c6c 20%,
+            transparent 0, transparent 25%,
+            #4a90e2 0, #4a90e2 45%,
+            transparent 0, transparent 50%);
+    background-size: 80rpx;
+    margin-bottom: 20rpx;
+    border-radius: 4rpx;
+}
+
+.address-card {
+    background-color: #fff;
+    border-radius: 20rpx 20rpx 0 0; // 只有上方圆角，下方接彩条
+    padding: 30rpx 40rpx;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .info {
+        flex: 1;
+
+        .tag-name {
+            display: flex;
+            align-items: baseline;
+            margin-bottom: 12rpx;
+
+            .tag {
+                background-color: #e6f6ee;
+                color: #00B26A;
+                font-size: 20rpx;
+                padding: 4rpx 10rpx;
+                border-radius: 6rpx;
+                margin-right: 12rpx;
+            }
+
+            .address-detail {
+                font-size: 36rpx;
+                font-weight: bold;
+                color: #333;
+            }
+        }
+
+        .user {
+            font-size: 28rpx;
+            color: #666;
+        }
+    }
+
+    .arrow {
+        color: #ccc;
+        font-family: monospace;
+        font-size: 32rpx;
+    }
+}
+
+.goods-card {
+    background-color: #fff;
+    border-radius: 20rpx;
+    padding: 30rpx;
+    margin-bottom: 20rpx;
+
+    .shop-title {
+        font-size: 28rpx;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 24rpx;
+        border-bottom: 1px dotted #f0f0f0;
+        padding-bottom: 20rpx;
+    }
+
+    .goods-item {
+        display: flex;
+        margin-bottom: 30rpx;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+
+        .pic {
+            width: 140rpx;
+            height: 140rpx;
+            border-radius: 12rpx;
+            background-color: #f7f8fa;
+            margin-right: 20rpx;
+        }
+
+        .detail {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+
+            .name {
+                font-size: 28rpx;
+                color: #333;
+                line-height: 1.4;
+                margin-bottom: 8rpx;
+            }
+
+            .desc {
+                background-color: #f5f5f5;
+                color: #999;
+                font-size: 22rpx;
+                padding: 4rpx 12rpx;
+                border-radius: 6rpx;
+                display: inline-block;
+                align-self: flex-start;
+            }
+
+            .price-num {
+                margin-top: auto;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+
+                .price {
+                    color: #ff5000;
+                    font-weight: bold;
+                    font-size: 32rpx;
+                }
+
+                .num {
+                    color: #666;
+                    font-size: 26rpx;
+                }
+            }
+        }
+    }
+}
+
+.fee-card {
+    background-color: #fff;
+    border-radius: 20rpx;
+    padding: 10rpx 30rpx;
+
+    .fee-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20rpx 0;
+
+        .label {
+            font-size: 28rpx;
+            color: #333;
+        }
+
+        .value {
+            font-size: 28rpx;
+            color: #333;
+
+            &.gray {
+                color: #999;
+            }
+        }
+    }
+}
+
+.pay-bar {
+    background-color: #fff;
+    height: 110rpx;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 30rpx;
+    box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.06);
+    padding-bottom: env(safe-area-inset-bottom);
+
+    .amount-info {
+        display: flex;
+        align-items: baseline;
+        color: #ff5000;
+
+        .text {
+            color: #333;
+            font-size: 28rpx;
+            margin-right: 12rpx;
+        }
+
+        .symbol {
+            font-size: 28rpx;
+            font-weight: bold;
+        }
+
+        .amount {
+            font-size: 44rpx;
+            font-weight: bold;
+        }
+    }
+
+    .pay-btn {
+        background: linear-gradient(135deg, #07c160, #00B26A);
+        color: #fff;
+        width: 240rpx;
+        height: 80rpx;
+        line-height: 80rpx;
+        text-align: center;
+        border-radius: 40rpx;
+        font-size: 32rpx;
+        font-weight: 500;
+
+        &:active {
+            opacity: 0.9;
+        }
+    }
+}

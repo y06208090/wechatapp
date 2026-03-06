@@ -22,6 +22,12 @@ export default function Category() {
     });
   }
 
+  const handleGoDetail = (id: string) => {
+    Taro.navigateTo({
+      url: `/pages/product-detail/index?id=${id}`
+    })
+  }
+
   return (
     <View className="category-page">
       <View className="search-bar">
@@ -58,7 +64,11 @@ export default function Category() {
           <View className="product-list-inner">
             {products.length > 0 ? (
               products.map((product) => (
-                <View className="product-item" key={product.id}>
+                <View
+                  className="product-item"
+                  key={product.id}
+                  onClick={() => handleGoDetail(product.id)}
+                >
                   <Image className="product-img" src={product.imageUrl} mode="aspectFill" />
                   <View className="product-info">
                     <View>

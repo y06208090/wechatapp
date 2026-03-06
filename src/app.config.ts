@@ -9,7 +9,9 @@ export default defineAppConfig({
     'pages/member/index',
     'pages/address/index',
     'pages/merchant/index',
-    'pages/setting/index'
+    'pages/setting/index',
+    'pages/product-detail/index',
+    'pages/checkout/index'
   ],
   window: {
     backgroundTextStyle: 'light',
