@@ -1,6 +1,8 @@
 export default defineAppConfig({
   pages: [
     'pages/category/index',
+    'pages/store-select/index',
+    'pages/login/index',
     'pages/cart/index',
     'pages/profile/index',
     'pages/courier/index',
@@ -11,7 +13,8 @@ export default defineAppConfig({
     'pages/merchant/index',
     'pages/setting/index',
     'pages/product-detail/index',
-    'pages/checkout/index'
+    'pages/checkout/index',
+    'pages/order-detail/index'
   ],
   window: {
     backgroundTextStyle: 'light',

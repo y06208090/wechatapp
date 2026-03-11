@@ -1,130 +1,199 @@
-import { useMemo } from 'react'
-import { View, Text, Image, ScrollView, Button } from '@tarojs/components'
-import Taro from '@tarojs/taro'
+import Taro, { useDidShow } from '@tarojs/taro'
+import React, { useState, useEffect } from 'react'
+import { View, Text, ScrollView, Image, Input } from '@tarojs/components'
 import { useCart } from '../../store/CartContext'
-import { useUser } from '../../store/UserContext'
+import { useStore } from '../../store/StoreContext'
+import { preview_order, create_order, pay_order } from '../../api'
 import './index.scss'
 
 export default function Checkout() {
-    const { items, clearCart } = useCart()
-    const { userInfo } = useUser()
+    const { items, totalPrice, clearCart } = useCart()
+    const { currentStore } = useStore()
+    const [previewData, setPreviewData] = useState<any>(null)
+    const [loading, setLoading] = useState(false)
+    const [remark, setRemark] = useState('')
 
-    // 结算清单仅包含在购物车里被 selected 的项
-    const checkoutItems = useMemo(() => {
-        return items.filter(item => item.selected)
-    }, [items])
+    // 配送方式：pickup(自提), delivery(外卖)
+    const [deliveryType, setDeliveryType] = useState<'pickup' | 'delivery'>('pickup')
+    const [selectedAddress, setSelectedAddress] = useState<any>(null)
 
-    const goodsTotal = useMemo(() => {
-        return checkoutItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
-    }, [checkoutItems])
+    const selectedItems = items.filter(i => i.selected)
 
-    // 模拟配送费、打折活动等
-    const shippingFee = goodsTotal > 39 ? 0 : 5
-    // 这里可以写更多的满减活动、优惠券逻辑
-    const couponDiscount = 0
-    const realPay = goodsTotal + shippingFee - couponDiscount
+    useDidShow(() => {
+        const addr = Taro.getStorageSync('selectedAddress')
+        if (addr) {
+            setSelectedAddress(addr)
+            Taro.removeStorageSync('selectedAddress')
+        }
+    })
 
-    const handlePay = () => {
-        if (checkoutItems.length === 0) {
-            Taro.showToast({ title: '没有可结算商品', icon: 'none' })
+    useEffect(() => {
+        if (selectedItems.length > 0 && currentStore?.id) {
+            handlePreview()
+        }
+    }, [deliveryType, selectedAddress])
+
+    const handlePreview = async () => {
+        setLoading(true)
+        try {
+            const formData: any = {
+                store_id: currentStore?.id,
+                items: selectedItems.map(i => ({
+                    product_id: i.id,
+                    quantity: i.quantity
+                })),
+                delivery_type: deliveryType
+            }
+            if (deliveryType === 'delivery' && selectedAddress) {
+                formData.address_id = selectedAddress.id
+            }
+            const res = await preview_order(formData)
+            setPreviewData(res)
+        } catch (e: any) {
+            Taro.showToast({ title: e.message || '订单预览失败', icon: 'none' })
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const handleSubmitOrder = async () => {
+        if (deliveryType === 'delivery' && !selectedAddress) {
+            Taro.showToast({ title: '请选择收货地址', icon: 'none' })
             return
         }
+        if (!previewData) return
 
-        Taro.showLoading({ title: '拉起微信支付...', mask: true })
-
-        // 模拟等待微信支付输入密码回调成功
-        setTimeout(() => {
-            Taro.hideLoading()
-
-            // 其实这里应该只移出已结算的，由于当前用简单上下文，我们为了Demo提供清空选中购物车的模拟
-            clearCart() // 我们暂时把清除全部作为一种清空
-
-            Taro.showToast({
-                title: '支付完成！',
-                icon: 'success',
-                duration: 1500
+        try {
+            Taro.showLoading({ title: '提交中...' })
+            const createRes = await create_order({
+                store_id: currentStore?.id,
+                items: selectedItems.map(i => ({
+                    product_id: i.id,
+                    quantity: i.quantity
+                })),
+                delivery_type: deliveryType,
+                address_id: deliveryType === 'delivery' ? selectedAddress?.id : undefined,
+                remark,
             })
 
-            // 支付成功后自动跳到我的订单页看结果
-            setTimeout(() => {
-                Taro.navigateTo({ url: '/pages/order/index' })
-            }, 1500)
+            if (createRes && createRes.id) {
+                // 唤起支付逻辑
+                const payRes = await pay_order({ order_id: createRes.id, pay_method: 'wechat' })
 
-        }, 1500)
+                // 模拟支付成功后清空购物车并跳转订单详情/列表
+                Taro.showToast({ title: '下单成功', icon: 'success' })
+                await clearCart()
+
+                setTimeout(() => {
+                    Taro.switchTab({ url: '/pages/order/index' })
+                }, 1500)
+            }
+
+        } catch (e: any) {
+            Taro.showToast({ title: e.message || '下单失败', icon: 'none' })
+        } finally {
+            Taro.hideLoading()
+        }
     }
 
-    const goAddress = () => {
-        Taro.navigateTo({ url: '/pages/address/index' })
-    }
-
-    if (checkoutItems.length === 0) {
-        return (
-            <View className="empty-wrap">
-                <Text>暂无商品结算数据</Text>
-                <Button onClick={() => Taro.navigateBack()}>返回</Button>
-            </View>
-        )
+    const goAddressSelect = () => {
+        Taro.navigateTo({ url: '/pages/address/index?from=checkout' })
     }
 
     return (
         <View className="checkout-page">
             <ScrollView scrollY className="content">
-                {/* 地址区 */}
-                <View className="address-card" onClick={goAddress}>
-                    <View className="info">
-                        <View className="tag-name">
-                            <Text className="tag">默认</Text>
-                            <Text className="address-detail">南区3栋201宿舍</Text>
-                        </View>
-                        <View className="user">小象士兵 138****8888</View>
+                <View className="section address-section">
+                    <View className="delivery-type">
+                        <Text
+                            className={deliveryType === 'pickup' ? 'active' : ''}
+                            onClick={() => setDeliveryType('pickup')}
+                        >
+                            到店自提
+                        </Text>
+                        <Text
+                            className={deliveryType === 'delivery' ? 'active' : ''}
+                            onClick={() => setDeliveryType('delivery')}
+                        >
+                            外卖配送
+                        </Text>
                     </View>
-                    <Text className="arrow">{'>'}</Text>
-                </View>
-                <View className="address-line"></View>
 
-                {/* 订单商品区 */}
-                <View className="goods-card">
-                    <View className="shop-title">部队小店</View>
-                    {checkoutItems.map((item) => (
-                        <View className="goods-item" key={item.id}>
-                            <Image className="pic" src={item.imageUrl} mode="aspectFill" />
-                            <View className="detail">
+                    {deliveryType === 'pickup' ? (
+                        <View className="store-info">
+                            <Text className="name">{currentStore?.name || '未知门店'}</Text>
+                            <Text className="address">{currentStore?.address || '未能获取门店地址'}</Text>
+                        </View>
+                    ) : (
+                        <View className="address-info" onClick={goAddressSelect}>
+                            {selectedAddress ? (
+                                <>
+                                    <View className="contact">
+                                        <Text className="name">{selectedAddress.contact_name}</Text>
+                                        <Text className="phone">{selectedAddress.phone}</Text>
+                                    </View>
+                                    <View className="detail">{selectedAddress.address} {selectedAddress.detail}</View>
+                                </>
+                            ) : (
+                                <Text className="placeholder">请选择收货地址 {'>'}</Text>
+                            )}
+                        </View>
+                    )}
+                </View>
+
+                <View className="section goods-section">
+                    <View className="title">商品明细</View>
+                    {selectedItems.map(item => (
+                        <View className="good-item" key={item.id}>
+                            <Image className="img" src={item.imageUrl} mode="aspectFill" />
+                            <View className="info">
                                 <View className="name">{item.name}</View>
-                                {item.desc && <View className="desc">{item.desc}</View>}
-                                <View className="price-num">
-                                    <Text className="price">¥{item.price.toFixed(1)}</Text>
-                                    <Text className="num">x{item.quantity}</Text>
+                                <View className="bottom">
+                                    <Text className="price">¥{((item.price || 0) / 100).toFixed(2)}</Text>
+                                    <Text className="count">x{item.quantity}</Text>
                                 </View>
                             </View>
                         </View>
                     ))}
                 </View>
 
-                {/* 费用明细 */}
-                <View className="fee-card">
+                <View className="section remark-section" style={{ padding: '16px', background: '#fff', borderRadius: '8px', marginBottom: '12px' }}>
+                    <View style={{ fontSize: '14px', marginBottom: '8px' }}>订单备注</View>
+                    <Input
+                        value={remark}
+                        onInput={(e) => setRemark(e.detail.value)}
+                        placeholder="请输入备注选填无接触配送等"
+                        style={{ fontSize: '13px', background: '#f5f5f5', padding: '8px 12px', borderRadius: '4px' }}
+                    />
+                </View>
+
+                <View className="section fee-section">
                     <View className="fee-row">
-                        <Text className="label">商品总额</Text>
-                        <Text className="value">¥{goodsTotal.toFixed(1)}</Text>
+                        <Text>商品总计</Text>
+                        <Text>¥{previewData ? (previewData.total_amount / 100).toFixed(2) : ((totalPrice || 0) / 100).toFixed(2)}</Text>
                     </View>
                     <View className="fee-row">
-                        <Text className="label">配送费</Text>
-                        <Text className="value">{shippingFee === 0 ? '免邮' : `¥${shippingFee.toFixed(1)}`}</Text>
+                        <Text>配送费</Text>
+                        <Text>¥{previewData ? (previewData.delivery_fee / 100).toFixed(2) : '0.00'}</Text>
                     </View>
                     <View className="fee-row">
-                        <Text className="label">优惠券</Text>
-                        <Text className="value gray">{userInfo.coupons > 0 ? `有${userInfo.coupons}张可用优惠券` : '暂无可用'}</Text>
+                        <Text>包装费</Text>
+                        <Text>¥{previewData ? (previewData.pack_fee / 100).toFixed(2) : '0.00'}</Text>
                     </View>
                 </View>
+
             </ScrollView>
 
-            {/* 底部支付付款栏 */}
-            <View className="pay-bar">
-                <View className="amount-info">
-                    <Text className="text">合计:</Text>
-                    <Text className="symbol">¥</Text>
-                    <Text className="amount">{realPay.toFixed(2)}</Text>
+            <View className="bottom-bar">
+                <View className="total">
+                    <Text className="label">合计：</Text>
+                    <Text className="price">
+                        ¥{previewData ? (previewData.pay_amount / 100).toFixed(2) : ((totalPrice || 0) / 100).toFixed(2)}
+                    </Text>
                 </View>
-                <View className="pay-btn" onClick={handlePay}>微信支付</View>
+                <View className="submit-btn" onClick={handleSubmitOrder}>
+                    {loading ? '处理中...' : '去支付'}
+                </View>
             </View>
         </View>
     )

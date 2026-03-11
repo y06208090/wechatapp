@@ -1,25 +1,81 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { View, Text, Image, ScrollView, Input, Navigator } from '@tarojs/components'
-import { mockCategories, Product } from '../../mock/data'
+import { mockCategories } from '../../mock/data'
 import { useCart } from '../../store/CartContext'
-import Taro from '@tarojs/taro'
+import { useStore } from '../../store/StoreContext'
+import { list_categories, list_products } from '../../api'
+import Taro, { useLoad } from '@tarojs/taro'
 import './index.scss'
 
 export default function Category() {
-  const [activeCategoryId, setActiveCategoryId] = useState<string>(mockCategories[0].id)
+  const [activeCategoryId, setActiveCategoryId] = useState<string>('')
+  const [categories, setCategories] = useState<any[]>([])
+  const [products, setProducts] = useState<any[]>([])
+  const [loading, setLoading] = useState(false)
   const { addItem } = useCart()
+  const { currentStore } = useStore() // 获取当前选中门店
 
-  const activeCategory = mockCategories.find((c) => c.id === activeCategoryId)
-  const products = (activeCategory && activeCategory.products) || []
+  useLoad(() => {
+    // 首次进入加载门店分类
+  })
 
-  const handleAddCart = (e: any, product: Product) => {
+  useEffect(() => {
+    if (currentStore && currentStore.id) {
+      fetchCategories(currentStore.id)
+    }
+  }, [currentStore])
+
+  useEffect(() => {
+    if (currentStore && currentStore.id && activeCategoryId) {
+      fetchProducts(currentStore.id, activeCategoryId)
+    }
+  }, [currentStore, activeCategoryId])
+
+  const fetchCategories = async (storeId: string) => {
+    try {
+      const res = await list_categories({ store_id: storeId })
+      if (res && res.length > 0) {
+        setCategories(res)
+        setActiveCategoryId(res[0].id)
+      } else {
+        setCategories([])
+      }
+    } catch (e) {
+      console.error('获取分类失败', e)
+    }
+  }
+
+  const fetchProducts = async (storeId: string, categoryId: string) => {
+    setLoading(true)
+    try {
+      const res = await list_products({ store_id: storeId, category_id: categoryId })
+      if (res && res.items) {
+        setProducts(res.items)
+      } else {
+        setProducts([])
+      }
+    } catch (e) {
+      console.error('获取商品失败', e)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleAddCart = async (e: any, product: any) => {
     e.stopPropagation();
-    addItem(product);
-    Taro.showToast({
-      title: '已加入购物车',
-      icon: 'success',
-      duration: 1000,
-    });
+    try {
+      await addItem({
+        id: product.id,
+        name: product.title || product.name,
+        price: product.price,
+        imageUrl: product.cover_image || product.imageUrl
+      });
+      Taro.showToast({
+        title: '已加入购物车',
+        icon: 'success',
+        duration: 1000,
+      });
+    } catch (e) { }
   }
 
   const handleGoDetail = (id: string) => {
@@ -27,6 +83,10 @@ export default function Category() {
       url: `/pages/product-detail/index?id=${id}`
     })
   }
+
+  // Fallback to mock data if real API yields nothing in dev
+  const displayCategories = categories.length > 0 ? categories : mockCategories
+  const displayProducts = products.length > 0 ? products : (activeCategoryId ? (mockCategories.find(c => c.id === activeCategoryId)?.products || []) : [])
 
   return (
     <View className="category-page">
@@ -49,7 +109,7 @@ export default function Category() {
 
       <View className="main-content">
         <ScrollView className="sidebar" scrollY>
-          {mockCategories.map((category) => (
+          {displayCategories.map((category) => (
             <View
               key={category.id}
               className={`category-item ${activeCategoryId === category.id ? 'active' : ''}`}
@@ -61,46 +121,40 @@ export default function Category() {
         </ScrollView>
 
         <ScrollView className="product-list" scrollY>
-          <View className="product-list-inner">
-            {products.length > 0 ? (
-              products.map((product) => (
-                <View
-                  className="product-item"
-                  key={product.id}
-                  onClick={() => handleGoDetail(product.id)}
-                >
-                  <Image className="product-img" src={product.imageUrl} mode="aspectFill" />
-                  <View className="product-info">
-                    <View>
-                      <View className="name">{product.name}</View>
-                      <View className="desc">{product.desc}</View>
-                      <View className="tags">
-                        {product.tags && product.tags.map((tag, index) => (
-                          <Text key={index} className="tag">{tag}</Text>
-                        ))}
-                        {product.salesTag && (
-                          <Text className="sales-tag">{product.salesTag}</Text>
-                        )}
-                      </View>
+          {displayProducts.length > 0 ? (
+            displayProducts.map((product: any) => (
+              <View className="product-item" key={product.id} onClick={() => handleGoDetail(product.id)}>
+                <Image className="product-img" src={product.cover_image || product.imageUrl} mode="aspectFill" />
+                <View className="product-info">
+                  <View>
+                    <View className="name">{product.title || product.name}</View>
+                    <View className="desc">{product.subtitle || product.desc}</View>
+                    <View className="tags">
+                      {product.tags && product.tags.map((tag: string, index: number) => (
+                        <Text key={index} className="tag">{tag}</Text>
+                      ))}
+                      {product.salesTag && (
+                        <Text className="sales-tag">{product.salesTag}</Text>
+                      )}
                     </View>
-                    <View className="price-row">
-                      <View>
-                        <Text className="price"><Text className="symbol">¥</Text>{product.price.toFixed(1)}</Text>
-                        {product.originalPrice && (
-                          <Text className="original-price">¥{product.originalPrice.toFixed(1)}</Text>
-                        )}
-                      </View>
-                      <View className="add-cart-btn" onClick={(e) => handleAddCart(e, product)}>
-                        +
-                      </View>
+                  </View>
+                  <View className="price-row">
+                    <View>
+                      <Text className="price"><Text className="symbol">¥</Text>{((product.price || 0) / 100).toFixed(2)}</Text>
+                      {product.original_price && (
+                        <Text className="original-price">¥{((product.original_price || 0) / 100).toFixed(2)}</Text>
+                      )}
+                    </View>
+                    <View className="add-cart-btn" onClick={(e) => handleAddCart(e, product)}>
+                      +
                     </View>
                   </View>
                 </View>
-              ))
-            ) : (
-              <View className="empty-state">该分类下暂无商品~</View>
-            )}
-          </View>
+              </View>
+            ))
+          ) : (
+            <View className="empty-state">{loading ? '加载中...' : '该分类下暂无商品~'}</View>
+          )}
         </ScrollView>
       </View>
     </View>

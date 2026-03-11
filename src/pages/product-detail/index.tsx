@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { View, Text, Image, ScrollView, Swiper, SwiperItem } from '@tarojs/components'
 import Taro, { useRouter } from '@tarojs/taro'
-import { mockCategories, Product } from '../../mock/data'
+import { get_product } from '../../api'
 import { useCart } from '../../store/CartContext'
 import './index.scss'
 
@@ -9,36 +9,42 @@ export default function ProductDetail() {
     const router = useRouter()
     const { id } = router.params
     const { addItem } = useCart()
-    const [product, setProduct] = useState<Product | null>(null)
+    const [product, setProduct] = useState<any | null>(null)
+    const [loading, setLoading] = useState(false)
 
     useEffect(() => {
-        // 模拟服务端根据 ID 查询商品信息
         if (id) {
-            let foundProduct: Product | undefined;
-            for (const category of mockCategories) {
-                foundProduct = category.products.find(p => p.id === id)
-                if (foundProduct) break;
-            }
-
-            if (foundProduct) {
-                setProduct(foundProduct)
-            } else {
-                Taro.showToast({
-                    title: '未找到该商品',
-                    icon: 'error'
-                })
-                setTimeout(() => Taro.navigateBack(), 1500)
-            }
+            fetchProductDetail(id as string)
         }
     }, [id])
+
+    const fetchProductDetail = async (productId: string) => {
+        setLoading(true)
+        try {
+            const res = await get_product(productId)
+            if (res) {
+                setProduct(res)
+            } else {
+                throw new Error('未找到该商品')
+            }
+        } catch (e: any) {
+            Taro.showToast({
+                title: e.message || '获取商品失败',
+                icon: 'none'
+            })
+            setTimeout(() => Taro.navigateBack(), 1500)
+        } finally {
+            setLoading(false)
+        }
+    }
 
     const goCart = () => {
         Taro.switchTab({ url: '/pages/cart/index' })
     }
 
-    const handleAddCart = () => {
+    const handleAddCart = async () => {
         if (product) {
-            addItem(product)
+            await addItem(product)
             Taro.showToast({
                 title: '已加入购物车',
                 icon: 'success',
@@ -47,11 +53,9 @@ export default function ProductDetail() {
         }
     }
 
-    const handleBuyNow = () => {
+    const handleBuyNow = async () => {
         if (product) {
-            // 真实项目中可能会有单独的立即购买 API，这里为了Demo连贯性，
-            // 我们模拟将商品加到购物车然后自动选中跳转（或者直接跳过去）
-            addItem(product)
+            await addItem(product)
             setTimeout(() => {
                 Taro.navigateTo({ url: '/pages/checkout/index' })
             }, 100)
@@ -75,16 +79,15 @@ export default function ProductDetail() {
                         circular
                         autoplay
                     >
-                        {/* 假如商品有多张图，这里用单图模拟 3 张不同的角度展示 */}
-                        <SwiperItem>
-                            <Image className="swiper-img" src={product.imageUrl} mode="aspectFit" />
-                        </SwiperItem>
-                        <SwiperItem>
-                            <Image className="swiper-img" src={product.imageUrl} mode="aspectFit" />
-                        </SwiperItem>
-                        <SwiperItem>
-                            <Image className="swiper-img" src={product.imageUrl} mode="aspectFit" />
-                        </SwiperItem>
+                        {product.images && product.images.length > 0 ? product.images.map((img: string, idx: number) => (
+                            <SwiperItem key={idx}>
+                                <Image className="swiper-img" src={img} mode="aspectFit" />
+                            </SwiperItem>
+                        )) : (
+                            <SwiperItem>
+                                <Image className="swiper-img" src={product.cover_image || product.imageUrl} mode="aspectFit" />
+                            </SwiperItem>
+                        )}
                     </Swiper>
                 </View>
 
@@ -93,20 +96,20 @@ export default function ProductDetail() {
                     <View className="price-row">
                         <Text className="current-price">
                             <Text className="symbol">¥</Text>
-                            {product.price.toFixed(1)}
+                            {((product.price || 0) / 100).toFixed(2)}
                         </Text>
-                        {product.originalPrice && (
-                            <Text className="original-price">¥{product.originalPrice.toFixed(1)}</Text>
+                        {product.original_price && (
+                            <Text className="original-price">¥{((product.original_price || 0) / 100).toFixed(2)}</Text>
                         )}
                         {product.salesTag && (
                             <Text className="sales-badge">{product.salesTag}</Text>
                         )}
                     </View>
-                    <View className="product-name">{product.name}</View>
-                    <View className="product-desc">{product.desc || '好物严选，品质保证'}</View>
+                    <View className="product-name">{product.title || product.name}</View>
+                    <View className="product-desc">{product.subtitle || product.desc || '好物严选，品质保证'}</View>
                     {product.tags && product.tags.length > 0 && (
                         <View className="tags">
-                            {product.tags.map((tag, idx) => (
+                            {product.tags.map((tag: string, idx: number) => (
                                 <Text key={idx} className="tag-item">{tag}</Text>
                             ))}
                         </View>
