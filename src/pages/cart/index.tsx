@@ -36,7 +36,7 @@ export default function Cart() {
         <View className="empty-cart">
           <Image
             className="empty-icon"
-            src="https://img12.360buyimg.com/img/s240x240_jfs/t1/181467/20/19052/15392/611a133fEbb8119eb/b2ab91fe9da248fd.png"
+            src=""
           />
           <Text className="empty-text">您的购物车还空着呢~快去逛逛吧</Text>
           <View className="go-shopping-btn" onClick={goShopping}>去逛逛</View>

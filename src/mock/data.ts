@@ -109,7 +109,7 @@ export const mockCategories: Category[] = [
 export const mockUser = {
   name: "小象士兵",
   avatar:
-    "https://img12.360buyimg.com/n1/s100x100_jfs/t1/181514/23/15160/125215/60f7e6f8Eb149024f/1f81d8ab1f8ad155.jpg",
+    "",
   balance: 100.0,
   coupons: 3,
 };

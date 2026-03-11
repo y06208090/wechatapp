@@ -1,6 +1,6 @@
 import Taro from '@tarojs/taro';
 
-const BASE_URL = 'http://localhost:8000/api';
+const BASE_URL = 'http://ec2-18-166-113-112.ap-east-1.compute.amazonaws.com:3000/';
 
 export interface HttpResponse<T = any> {
   success: boolean;

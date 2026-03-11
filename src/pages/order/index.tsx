@@ -88,7 +88,7 @@ export default function Order() {
                     </View>
                 )) : (
                     <View className="empty-state">
-                        <Image className="icon" src="https://img12.360buyimg.com/img/s240x240_jfs/t1/181467/20/19052/15392/611a133fEbb8119eb/b2ab91fe9da248fd.png" mode="aspectFit" />
+                        <Image className="icon" src="" mode="aspectFit" />
                         <Text>{loading ? '加载中...' : '暂无相关订单记录'}</Text>
                     </View>
                 )}

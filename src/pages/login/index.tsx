@@ -17,6 +17,7 @@ export default function Login() {
             Taro.showLoading({ title: '登录中...' })
             // 1. 获取微信登录 code
             const { code: wxCode } = await Taro.login()
+            console.log(code, 20);
 
             // 2. 调用后端接口交换 token
             try {
@@ -102,40 +103,51 @@ export default function Login() {
     return (
         <View className='login-page'>
             <View className='header'>
-                <Text className='title'>欢迎使用小象超市</Text>
-                <Text className='subtitle'>请登录以继续使用服务</Text>
+                <View className='title'>
+                    <View className='title-main'>欢迎使用</View>
+                    <View className='brand-text'>小象超市</View>
+                </View>
+                <View className='subtitle'>生活所需，一触即达</View>
             </View>
 
             <View className='login-box'>
                 <View className='tabs'>
-                    <Text
+                    <View
+                        key='tab-wechat'
                         className={`tab ${loginType === 'wechat' ? 'active' : ''}`}
                         onClick={() => setLoginType('wechat')}
                     >
-                        微信登录
-                    </Text>
-                    <Text
+                        <Text>微信登录</Text>
+                        <View className={`tab-underline ${loginType === 'wechat' ? 'active-line' : ''}`}></View>
+                    </View>
+                    <View
+                        key='tab-phone'
                         className={`tab ${loginType === 'phone' ? 'active' : ''}`}
                         onClick={() => setLoginType('phone')}
                     >
-                        手机号登录
-                    </Text>
+                        <Text>验证码登录</Text>
+                        <View className={`tab-underline ${loginType === 'phone' ? 'active-line' : ''}`}></View>
+                    </View>
                 </View>
 
                 {loginType === 'wechat' ? (
-                    <View className='wechat-login'>
+                    <View key='wechat-panel' className='wechat-login'>
                         <Button className='btn-wechat' onClick={handleWechatLogin}>
                             微信一键登录
                         </Button>
-                        <Text className='tip'>获取您的公开信息(昵称、头像等)</Text>
+                        <View className='tip-box'>
+                            <Text className='tip'>登录即代表您已阅读并同意</Text>
+                            <Text className='tip'>《用户协议》与《隐私政策》</Text>
+                        </View>
                     </View>
                 ) : (
-                    <View className='phone-login'>
+                    <View key='phone-panel' className='phone-login'>
                         <View className='input-group'>
                             <Input
                                 className='input'
                                 type='number'
                                 placeholder='请输入手机号'
+                                placeholderStyle='color: #ccc'
                                 maxlength={11}
                                 value={phone}
                                 onInput={(e) => setPhone(e.detail.value)}
@@ -145,23 +157,28 @@ export default function Login() {
                             <Input
                                 className='input'
                                 type='number'
-                                placeholder='收到的验证码'
+                                placeholder='请输入验证码'
+                                placeholderStyle='color: #ccc'
                                 maxlength={6}
                                 value={code}
                                 onInput={(e) => setCode(e.detail.value)}
                             />
-                            <Text
+                            <View
                                 className={`btn-code ${countdown > 0 ? 'disabled' : ''}`}
                                 onClick={countdown > 0 ? undefined : handleSendCode}
                             >
-                                {countdown > 0 ? `${countdown}s后获取` : '获取验证码'}
-                            </Text>
+                                {countdown > 0 ? `${countdown}s` : '获取验证码'}
+                            </View>
                         </View>
                         <Button className='btn-submit' onClick={handlePhoneLogin}>
-                            登录
+                            立即登录
                         </Button>
                     </View>
                 )}
+            </View>
+
+            <View className='footer-agreement'>
+                登录表示同意 <Text className='link'>用户协议</Text> 和 <Text className='link'>隐私政策</Text>
             </View>
         </View>
     )
