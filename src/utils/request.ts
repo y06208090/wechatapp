@@ -1,6 +1,6 @@
 import Taro from '@tarojs/taro';
 
-const BASE_URL = 'http://ec2-18-166-113-112.ap-east-1.compute.amazonaws.com:3000/';
+const BASE_URL = 'http://ec2-18-166-113-112.ap-east-1.compute.amazonaws.com:3000/api/v1';
 
 export interface HttpResponse<T = any> {
   success: boolean;
@@ -17,6 +17,7 @@ export const request = async <T = any>(
   data?: any,
   contentType: string = 'application/json'
 ): Promise<T> => {
+  const requestUrl = `${BASE_URL}${url.startsWith('/') ? url : `/${url}`}`;
   const token = Taro.getStorageSync('token');
   const header: any = {
     'content-type': contentType,
@@ -27,7 +28,7 @@ export const request = async <T = any>(
 
   try {
     const res = await Taro.request({
-      url: BASE_URL + url,
+      url: requestUrl,
       method,
       data,
       header,

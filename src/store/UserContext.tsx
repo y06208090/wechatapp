@@ -8,11 +8,20 @@ export interface UserInfo {
     balance: number;
     coupons: number;
     isLoggedIn: boolean;
+    id?: string;
+    phone?: string;
+    isMember?: boolean;
 }
 
 interface UserContextType {
     userInfo: UserInfo;
-    login: (avatar: string, name: string) => void;
+    login: (payload: {
+        avatar?: string | null;
+        nickname?: string | null;
+        phone?: string | null;
+        id?: string;
+        is_member?: boolean;
+    }) => void;
     logout: () => void;
 }
 
@@ -37,14 +46,23 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
     }, [])
 
-    const login = (avatarUrl: string, name: string) => {
+    const login = (payload: {
+        avatar?: string | null;
+        nickname?: string | null;
+        phone?: string | null;
+        id?: string;
+        is_member?: boolean;
+    }) => {
         const newUserInfo = {
             ...userInfo,
-            name: name,
-            avatar: avatarUrl,
+            name: payload.nickname || '微信用户',
+            avatar: payload.avatar || defaultUser.avatar,
             balance: mockUser.balance, // 模拟读取真实账户数据
             coupons: mockUser.coupons,
             isLoggedIn: true,
+            id: payload.id,
+            phone: payload.phone || undefined,
+            isMember: payload.is_member ?? false,
         }
         setUserInfo(newUserInfo)
         Taro.setStorageSync('currentUser', newUserInfo)
@@ -52,7 +70,9 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const logout = () => {
         setUserInfo(defaultUser)
+        Taro.removeStorageSync('token')
         Taro.removeStorageSync('currentUser')
+        Taro.removeStorageSync('backendUser')
         Taro.showToast({
             title: '已退出登录',
             icon: 'none'

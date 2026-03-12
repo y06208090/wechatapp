@@ -5,6 +5,19 @@ import { useUser } from '../../store/UserContext'
 import { wechat_login, phone_sms_login, send_sms_code } from '../../api'
 import './index.scss'
 
+interface AuthUser {
+    id: string;
+    avatar?: string | null;
+    nickname?: string | null;
+    phone?: string | null;
+    is_member?: boolean;
+}
+
+interface AuthResponse {
+    token: string;
+    user: AuthUser;
+}
+
 export default function Login() {
     const { login } = useUser()
     const [loginType, setLoginType] = useState<'wechat' | 'phone'>('wechat')
@@ -12,40 +25,47 @@ export default function Login() {
     const [code, setCode] = useState('')
     const [countdown, setCountdown] = useState(0)
 
-    const handleWechatLogin = async () => {
-        try {
-            Taro.showLoading({ title: '登录中...' })
-            // 1. 获取微信登录 code
-            const { code: wxCode } = await Taro.login()
-            console.log(code, 20);
+    const finishLogin = (res: AuthResponse, fallbackName: string) => {
+        Taro.setStorageSync('token', res.token)
+        Taro.setStorageSync('backendUser', res.user)
+        login({
+            id: res.user.id,
+            avatar: res.user.avatar,
+            nickname: res.user.nickname || fallbackName,
+            phone: res.user.phone,
+            is_member: res.user.is_member,
+        })
+        Taro.showToast({ title: '登录成功', icon: 'success' })
+        setTimeout(() => {
+            Taro.navigateBack({
+                fail: () => Taro.switchTab({ url: '/pages/profile/index' })
+            })
+        }, 1500)
+    }
 
-            // 2. 调用后端接口交换 token
-            try {
-                const res = await wechat_login({ data: { code: wxCode } })
-                if (res && res.token && res.user) {
-                    Taro.setStorageSync('token', res.token)
-                    login(res.user.avatar || '', res.user.name || '微信用户')
-                    Taro.showToast({ title: '登录成功', icon: 'success' })
-                    setTimeout(() => {
-                        Taro.navigateBack({
-                            fail: () => Taro.switchTab({ url: '/pages/profile/index' })
-                        })
-                    }, 1500)
-                }
-            } catch (apiError: any) {
-                console.error("微信登录后端报错，可能 AppID 测试号不匹配:", apiError)
-                // 模拟一个成功登录，避免测试被阻断
-                Taro.setStorageSync('token', 'mock-token-12345')
-                login('', '开发模拟用户')
-                Taro.showToast({ title: '模拟登录成功', icon: 'success' })
-                setTimeout(() => {
-                    Taro.navigateBack({
-                        fail: () => Taro.switchTab({ url: '/pages/profile/index' })
-                    })
-                }, 1500)
+    const getWechatCode = async () => {
+        const { code } = await Taro.login()
+        if (!code) {
+            throw new Error('未获取到微信登录凭证')
+        }
+        return code
+    }
+
+    const handleWechatLogin = async () => {
+        Taro.showLoading({ title: '登录中...' })
+        try {
+            const wxCode = await getWechatCode()
+            const res = await wechat_login({
+                code: wxCode,
+            })
+
+            if (!res?.token || !res?.user) {
+                throw new Error('登录接口未返回有效用户信息')
             }
+
+            finishLogin(res, '微信用户')
         } catch (e: any) {
-            Taro.showToast({ title: e.message || '获取微信授权失败', icon: 'none' })
+            Taro.showToast({ title: e.message || '微信登录失败', icon: 'none' })
         } finally {
             Taro.hideLoading()
         }
@@ -57,7 +77,7 @@ export default function Login() {
         }
         try {
             Taro.showLoading({ title: '发送中...' })
-            await send_sms_code({ data: { phone } })
+            await send_sms_code({ phone })
             Taro.showToast({ title: '验证码已发送', icon: 'success' })
             setCountdown(60)
             const timer = setInterval(() => {
@@ -83,16 +103,10 @@ export default function Login() {
         try {
             Taro.showLoading({ title: '登录中...' })
             const res = await phone_sms_login({ data: { phone, smx_code: code } })
-            if (res && res.token && res.user) {
-                Taro.setStorageSync('token', res.token)
-                login(res.user.avatar || '', res.user.name || '手机用户')
-                Taro.showToast({ title: '登录成功', icon: 'success' })
-                setTimeout(() => {
-                    Taro.navigateBack({
-                        fail: () => Taro.switchTab({ url: '/pages/profile/index' })
-                    })
-                }, 1500)
+            if (!res?.token || !res?.user) {
+                throw new Error('登录接口未返回有效用户信息')
             }
+            finishLogin(res, '手机用户')
         } catch (e: any) {
             Taro.showToast({ title: e.message || '登录失败', icon: 'none' })
         } finally {
