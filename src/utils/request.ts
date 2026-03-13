@@ -1,6 +1,8 @@
 import Taro from '@tarojs/taro';
 
-const BASE_URL = 'http://ec2-18-166-113-112.ap-east-1.compute.amazonaws.com:3000/api/v1';
+export const API_BASE_URL =
+  'http://ec2-18-166-113-112.ap-east-1.compute.amazonaws.com:3000/api/v1';
+export const ASSET_BASE_URL = API_BASE_URL.replace(/\/api\/v1$/, '');
 
 export interface HttpResponse<T = any> {
   success: boolean;
@@ -13,11 +15,11 @@ export interface HttpResponse<T = any> {
 
 export const request = async <T = any>(
   url: string,
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'GET',
+  method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' = 'GET',
   data?: any,
   contentType: string = 'application/json'
 ): Promise<T> => {
-  const requestUrl = `${BASE_URL}${url.startsWith('/') ? url : `/${url}`}`;
+  const requestUrl = `${API_BASE_URL}${url.startsWith('/') ? url : `/${url}`}`;
   const token = Taro.getStorageSync('token');
   const header: any = {
     'content-type': contentType,
@@ -59,4 +61,14 @@ export const request = async <T = any>(
     });
     throw error;
   }
+};
+
+export const buildAssetUrl = (path?: string | null) => {
+  if (!path) {
+    return '';
+  }
+  if (/^https?:\/\//.test(path)) {
+    return path;
+  }
+  return `${ASSET_BASE_URL}${path.startsWith('/') ? path : `/${path}`}`;
 };

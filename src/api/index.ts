@@ -196,6 +196,20 @@ export const wechat_login = async (data?: any): Promise<any> => {
 };
 
 /**
+ * 接口功能：get_me，获取当前登录用户资料
+ */
+export const get_me = async (): Promise<any> => {
+  return request<any>('/me', 'GET', undefined);
+};
+
+/**
+ * 接口功能：update_me_profile，更新当前登录用户昵称和头像
+ */
+export const update_me_profile = async (data?: any): Promise<any> => {
+  return request<any>('/me/profile', 'PATCH', data);
+};
+
+/**
  * 接口功能：get_cart，获取指定门店购物车
  */
 export const get_cart = async (params?: { store_id?: string }): Promise<any> => {

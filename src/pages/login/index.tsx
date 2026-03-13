@@ -16,6 +16,7 @@ interface AuthUser {
 interface AuthResponse {
     token: string;
     user: AuthUser;
+    profile_completed: boolean;
 }
 
 export default function Login() {
@@ -31,12 +32,21 @@ export default function Login() {
         login({
             id: res.user.id,
             avatar: res.user.avatar,
-            nickname: res.user.nickname || fallbackName,
+            nickname:
+                res.user.nickname || (res.profile_completed ? fallbackName : undefined),
             phone: res.user.phone,
             is_member: res.user.is_member,
+            profile_completed: res.profile_completed,
         })
         Taro.showToast({ title: '登录成功', icon: 'success' })
         setTimeout(() => {
+            if (!res.profile_completed) {
+                Taro.setStorageSync('needsProfileCompletion', true)
+                Taro.switchTab({ url: '/pages/profile/index' })
+                return
+            }
+
+            Taro.removeStorageSync('needsProfileCompletion')
             Taro.navigateBack({
                 fail: () => Taro.switchTab({ url: '/pages/profile/index' })
             })
@@ -102,7 +112,12 @@ export default function Login() {
         }
         try {
             Taro.showLoading({ title: '登录中...' })
-            const res = await phone_sms_login({ data: { phone, smx_code: code } })
+            const wechatCode = await getWechatCode()
+            const res = await phone_sms_login({
+                phone,
+                sms_code: code,
+                wechat_code: wechatCode,
+            })
             if (!res?.token || !res?.user) {
                 throw new Error('登录接口未返回有效用户信息')
             }
