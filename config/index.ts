@@ -4,7 +4,7 @@ import devConfig from './dev'
 import prodConfig from './prod'
 
 const LOCAL_API_ORIGIN = 'http://127.0.0.1:3000'
-const REMOTE_API_ORIGIN = 'http://ec2-18-166-113-112.ap-east-1.compute.amazonaws.com:3000'
+const REMOTE_API_ORIGIN = 'https://ministore.fangweicong.me'
 
 const trimTrailingSlash = (value: string) => value.replace(/\/+$/, '')
 

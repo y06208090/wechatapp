@@ -61,10 +61,44 @@ export default function Login() {
         return code
     }
 
+    const getErrorMessage = (error: any, fallback: string) => {
+        if (error && typeof error.message === 'string' && error.message.trim()) {
+            return error.message.trim()
+        }
+        if (error && typeof error.errMsg === 'string' && error.errMsg.trim()) {
+            return error.errMsg.trim()
+        }
+        return fallback
+    }
+
+    const reportLoginError = async (stage: string, error: any, fallback: string) => {
+        const message = getErrorMessage(error, fallback)
+        const toastTitle = `${stage}:${message}`.slice(0, 20)
+        console.error(`[login-error][${stage}]`, error)
+        Taro.hideLoading()
+        Taro.showToast({ title: toastTitle, icon: 'none', duration: 2500 })
+        await Taro.showModal({
+            title: `${stage}失败`,
+            content: message,
+            showCancel: false,
+            confirmText: '知道了',
+        })
+    }
+
     const handleWechatLogin = async () => {
         Taro.showLoading({ title: '登录中...' })
         try {
-            const wxCode = await getWechatCode()
+            let wxCode = ''
+            try {
+                wxCode = await getWechatCode()
+                console.info('[wechat-login] wx.login succeeded', {
+                    codePreview: `${wxCode.slice(0, 4)}***${wxCode.slice(-4)}`
+                })
+            } catch (error: any) {
+                await reportLoginError('微信凭证', error, '获取微信登录凭证失败')
+                return
+            }
+
             const res = await wechat_login({
                 code: wxCode,
             })
@@ -73,9 +107,13 @@ export default function Login() {
                 throw new Error('登录接口未返回有效用户信息')
             }
 
+            console.info('[wechat-login] backend login succeeded', {
+                userId: res.user.id,
+                profileCompleted: res.profile_completed,
+            })
             finishLogin(res, '微信用户')
         } catch (e: any) {
-            Taro.showToast({ title: e.message || '微信登录失败', icon: 'none' })
+            await reportLoginError('后端登录', e, '微信登录失败')
         } finally {
             Taro.hideLoading()
         }
@@ -123,7 +161,7 @@ export default function Login() {
             }
             finishLogin(res, '手机用户')
         } catch (e: any) {
-            Taro.showToast({ title: e.message || '登录失败', icon: 'none' })
+            await reportLoginError('手机登录', e, '登录失败')
         } finally {
             Taro.hideLoading()
         }
