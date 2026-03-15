@@ -11,6 +11,9 @@ declare module '*.scss';
 declare module '*.sass';
 declare module '*.styl';
 
+declare const __API_ORIGIN__: string;
+declare const __API_BASE_URL__: string;
+
 declare namespace NodeJS {
   interface ProcessEnv {
     /** NODE 内置环境变量, 会影响到最终构建生成产物 */
@@ -23,7 +26,8 @@ declare namespace NodeJS {
      * @see https://taro-docs.jd.com/docs/next/env-mode-config#特殊环境变量-taro_app_id
      */
     TARO_APP_ID: string
+    APP_API_ORIGIN?: string
+    TARO_APP_API_ORIGIN?: string
   }
 }
-
 

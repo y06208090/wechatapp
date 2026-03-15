@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react'
 import Taro from '@tarojs/taro'
 
 import { mockUser } from '../mock/data'
+import { clearAuthStorage } from '../utils/request'
 
 export const DEFAULT_AVATAR_URL =
   'https://mmbiz.qpic.cn/mmbiz/icTdbqWNOwNRna42FI242Lcia07jQodd2FJGIYQfG0LAJGFxM4FbnQP6yfMxBgJ0F3YRqJCJ1aPAK2dQagdusBZg/0'
@@ -50,19 +51,31 @@ const buildUserInfo = (
   payload: BackendUserPayload,
   previous?: UserInfo,
 ): UserInfo => {
-  const avatar = payload.avatar?.trim() || previous?.avatar || ''
-  const nickname = payload.nickname?.trim() || previous?.name || ''
+  const avatar = (typeof payload.avatar === 'string' ? payload.avatar.trim() : '') || (previous ? previous.avatar : '') || ''
+  const nickname = (typeof payload.nickname === 'string' ? payload.nickname.trim() : '') || (previous ? previous.name : '') || ''
+  const previousBalance = previous ? previous.balance : undefined
+  const previousCoupons = previous ? previous.coupons : undefined
+  const previousProfileCompleted = previous ? previous.profileCompleted : undefined
+  const previousId = previous ? previous.id : undefined
+  const previousPhone = previous ? previous.phone : undefined
+  const previousIsMember = previous ? previous.isMember : undefined
 
   return {
     name: nickname,
     avatar,
-    balance: previous?.balance ?? mockUser.balance,
-    coupons: previous?.coupons ?? mockUser.coupons,
+    balance: previousBalance !== undefined && previousBalance !== null ? previousBalance : mockUser.balance,
+    coupons: previousCoupons !== undefined && previousCoupons !== null ? previousCoupons : mockUser.coupons,
     isLoggedIn: true,
-    profileCompleted: payload.profile_completed ?? previous?.profileCompleted ?? false,
-    id: payload.id ?? previous?.id,
-    phone: payload.phone ?? previous?.phone,
-    isMember: payload.is_member ?? previous?.isMember ?? false,
+    profileCompleted:
+      payload.profile_completed !== undefined && payload.profile_completed !== null
+        ? payload.profile_completed
+        : (previousProfileCompleted !== undefined && previousProfileCompleted !== null ? previousProfileCompleted : false),
+    id: payload.id !== undefined && payload.id !== null ? payload.id : previousId,
+    phone: payload.phone !== undefined && payload.phone !== null ? payload.phone : previousPhone,
+    isMember:
+      payload.is_member !== undefined && payload.is_member !== null
+        ? payload.is_member
+        : (previousIsMember !== undefined && previousIsMember !== null ? previousIsMember : false),
   }
 }
 
@@ -70,7 +83,12 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [userInfo, setUserInfo] = useState<UserInfo>(defaultUser)
 
   useEffect(() => {
+    const token = Taro.getStorageSync('token')
     const savedUser = Taro.getStorageSync('currentUser')
+    if (!token) {
+      clearAuthStorage()
+      return
+    }
     if (savedUser) {
       setUserInfo(savedUser)
     }
@@ -80,13 +98,15 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUserInfo(nextUserInfo)
     Taro.setStorageSync('currentUser', nextUserInfo)
     Taro.setStorageSync('backendUser', {
-      id: payload.id ?? nextUserInfo.id,
-      avatar: payload.avatar ?? nextUserInfo.avatar,
-      nickname: payload.nickname ?? nextUserInfo.name,
-      phone: payload.phone ?? nextUserInfo.phone,
-      is_member: payload.is_member ?? nextUserInfo.isMember,
+      id: payload.id !== undefined && payload.id !== null ? payload.id : nextUserInfo.id,
+      avatar: payload.avatar !== undefined && payload.avatar !== null ? payload.avatar : nextUserInfo.avatar,
+      nickname: payload.nickname !== undefined && payload.nickname !== null ? payload.nickname : nextUserInfo.name,
+      phone: payload.phone !== undefined && payload.phone !== null ? payload.phone : nextUserInfo.phone,
+      is_member: payload.is_member !== undefined && payload.is_member !== null ? payload.is_member : nextUserInfo.isMember,
       profile_completed:
-        payload.profile_completed ?? nextUserInfo.profileCompleted,
+        payload.profile_completed !== undefined && payload.profile_completed !== null
+          ? payload.profile_completed
+          : nextUserInfo.profileCompleted,
     })
   }
 
@@ -95,13 +115,15 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const nextUserInfo = buildUserInfo(payload, previous)
       Taro.setStorageSync('currentUser', nextUserInfo)
       Taro.setStorageSync('backendUser', {
-        id: payload.id ?? nextUserInfo.id,
-        avatar: payload.avatar ?? nextUserInfo.avatar,
-        nickname: payload.nickname ?? nextUserInfo.name,
-        phone: payload.phone ?? nextUserInfo.phone,
-        is_member: payload.is_member ?? nextUserInfo.isMember,
+        id: payload.id !== undefined && payload.id !== null ? payload.id : nextUserInfo.id,
+        avatar: payload.avatar !== undefined && payload.avatar !== null ? payload.avatar : nextUserInfo.avatar,
+        nickname: payload.nickname !== undefined && payload.nickname !== null ? payload.nickname : nextUserInfo.name,
+        phone: payload.phone !== undefined && payload.phone !== null ? payload.phone : nextUserInfo.phone,
+        is_member: payload.is_member !== undefined && payload.is_member !== null ? payload.is_member : nextUserInfo.isMember,
         profile_completed:
-          payload.profile_completed ?? nextUserInfo.profileCompleted,
+          payload.profile_completed !== undefined && payload.profile_completed !== null
+            ? payload.profile_completed
+            : nextUserInfo.profileCompleted,
       })
       return nextUserInfo
     })
@@ -134,10 +156,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = () => {
     setUserInfo(defaultUser)
-    Taro.removeStorageSync('token')
-    Taro.removeStorageSync('currentUser')
-    Taro.removeStorageSync('backendUser')
-    Taro.removeStorageSync('needsProfileCompletion')
+    clearAuthStorage()
     Taro.showToast({
       title: '已退出登录',
       icon: 'none',

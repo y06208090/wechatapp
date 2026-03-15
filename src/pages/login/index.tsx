@@ -69,7 +69,7 @@ export default function Login() {
                 code: wxCode,
             })
 
-            if (!res?.token || !res?.user) {
+            if (!res || !res.token || !res.user) {
                 throw new Error('登录接口未返回有效用户信息')
             }
 
@@ -118,7 +118,7 @@ export default function Login() {
                 sms_code: code,
                 wechat_code: wechatCode,
             })
-            if (!res?.token || !res?.user) {
+            if (!res || !res.token || !res.user) {
                 throw new Error('登录接口未返回有效用户信息')
             }
             finishLogin(res, '手机用户')

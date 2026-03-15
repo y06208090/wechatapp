@@ -22,6 +22,12 @@ export default defineAppConfig({
     navigationBarTitleText: '小象超市',
     navigationBarTextStyle: 'black'
   },
+  permission: {
+    'scope.userLocation': {
+      desc: '用于获取当前位置并匹配最近可服务门店'
+    }
+  },
+  requiredPrivateInfos: ['getLocation'],
   tabBar: {
     color: '#999999',
     selectedColor: '#00B26A',

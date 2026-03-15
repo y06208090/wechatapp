@@ -54,6 +54,67 @@
             font-size: 28rpx;
         }
     }
+
+    .order-list {
+        flex: 1;
+        padding: 20rpx;
+        box-sizing: border-box;
+
+        .order-item {
+            background: #fff;
+            border-radius: 18rpx;
+            padding: 28rpx;
+            margin-bottom: 20rpx;
+            box-shadow: 0 16rpx 36rpx -28rpx rgba(15, 23, 42, 0.22);
+
+            .header-row,
+            .footer-row {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            .header-row {
+                margin-bottom: 16rpx;
+
+                .store-name {
+                    font-size: 30rpx;
+                    font-weight: 700;
+                    color: #111827;
+                }
+
+                .status {
+                    font-size: 24rpx;
+                    color: #00B26A;
+                    font-weight: 600;
+                }
+            }
+
+            .goods-summary {
+                padding: 20rpx 0;
+                border-top: 1rpx solid #f1f5f9;
+                border-bottom: 1rpx solid #f1f5f9;
+                margin-bottom: 16rpx;
+
+                .goods-title {
+                    font-size: 26rpx;
+                    color: #475569;
+                    line-height: 1.5;
+                }
+            }
+
+            .footer-row {
+                font-size: 24rpx;
+                color: #64748b;
+
+                .price {
+                    color: #ef4444;
+                    font-weight: 700;
+                    margin-left: 8rpx;
+                }
+            }
+        }
+    }
 }
 
 .courier-order-page {

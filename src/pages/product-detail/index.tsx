@@ -3,25 +3,31 @@ import { View, Text, Image, ScrollView, Swiper, SwiperItem } from '@tarojs/compo
 import Taro, { useRouter } from '@tarojs/taro'
 import { get_product } from '../../api'
 import { useCart } from '../../store/CartContext'
+import { useStore } from '../../store/StoreContext'
 import './index.scss'
 
 export default function ProductDetail() {
     const router = useRouter()
     const { id } = router.params
     const { addItem } = useCart()
+    const { currentStore } = useStore()
+    const currentStoreId = currentStore ? currentStore.id : ''
     const [product, setProduct] = useState<any | null>(null)
     const [loading, setLoading] = useState(false)
 
     useEffect(() => {
-        if (id) {
+        if (id && currentStoreId) {
             fetchProductDetail(id as string)
         }
-    }, [id])
+    }, [id, currentStoreId])
 
     const fetchProductDetail = async (productId: string) => {
+        if (!currentStoreId) {
+            return
+        }
         setLoading(true)
         try {
-            const res = await get_product(productId)
+            const res = await get_product(productId, { store_id: currentStoreId })
             if (res) {
                 setProduct(res)
             } else {
@@ -44,7 +50,10 @@ export default function ProductDetail() {
 
     const handleAddCart = async () => {
         if (product) {
-            await addItem(product)
+            const added = await addItem(product)
+            if (!added) {
+                return
+            }
             Taro.showToast({
                 title: '已加入购物车',
                 icon: 'success',
@@ -55,7 +64,10 @@ export default function ProductDetail() {
 
     const handleBuyNow = async () => {
         if (product) {
-            await addItem(product)
+            const added = await addItem(product)
+            if (!added) {
+                return
+            }
             setTimeout(() => {
                 Taro.navigateTo({ url: '/pages/checkout/index' })
             }, 100)

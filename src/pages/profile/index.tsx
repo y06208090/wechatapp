@@ -17,7 +17,6 @@ import './index.scss'
 export default function Profile() {
   const { userInfo, logout, syncBackendUser, completeProfile } = useUser()
   const [showProfilePopup, setShowProfilePopup] = useState(false)
-  const [showAvatarSheet, setShowAvatarSheet] = useState(false)
   const [draftNickname, setDraftNickname] = useState('')
   const [draftAvatar, setDraftAvatar] = useState('')
   const [saving, setSaving] = useState(false)
@@ -44,8 +43,10 @@ export default function Profile() {
   }
 
   const ensureProfileCompletionState = async () => {
-    if (!userInfo.isLoggedIn) {
+    const token = Taro.getStorageSync('token')
+    if (!token || !userInfo.isLoggedIn) {
       setShowProfilePopup(false)
+      Taro.navigateTo({ url: '/pages/login/index' })
       return
     }
 
@@ -115,12 +116,15 @@ export default function Profile() {
         typeof uploadRes.data === 'string'
           ? JSON.parse(uploadRes.data)
           : uploadRes.data
-      if (!body?.success) {
-        throw new Error(body?.error?.message || '头像上传失败')
+      if (!body || !body.success) {
+        throw new Error(
+          body && body.error && body.error.message
+            ? body.error.message
+            : '头像上传失败'
+        )
       }
 
       setDraftAvatar(buildAssetUrl(body.data.url))
-      setShowAvatarSheet(false)
     } catch (error: any) {
       Taro.showToast({
         title: error.message || '头像上传失败',
@@ -132,12 +136,12 @@ export default function Profile() {
   }
 
   const handleChooseWechatAvatar = async (event: any) => {
-    const avatarUrl = event?.detail?.avatarUrl
+    const avatarUrl = event && event.detail ? event.detail.avatarUrl : ''
     if (!avatarUrl) {
       Taro.showToast({ title: '未获取到微信头像', icon: 'none' })
       return
     }
-    await handleChooseAvatarFile(avatarUrl)
+    setDraftAvatar(avatarUrl)
   }
 
   const handleChooseImage = async (
@@ -149,7 +153,9 @@ export default function Profile() {
         sizeType: ['compressed'],
         sourceType,
       })
-      const filePath = result.tempFilePaths?.[0]
+      const filePath = result.tempFilePaths && result.tempFilePaths.length > 0
+        ? result.tempFilePaths[0]
+        : ''
       if (!filePath) {
         return
       }
@@ -287,19 +293,30 @@ export default function Profile() {
             </View>
 
             <View className="form-group">
-              <View
-                className="form-item avatar-picker-wrapper"
-                onClick={() => setShowAvatarSheet(true)}
-              >
+              <View className="form-item avatar-picker-wrapper">
                 <Text className="label">头像</Text>
                 <Image
                   className="temp-avatar-preview"
                   src={draftAvatar || DEFAULT_AVATAR_URL}
                   mode="aspectFill"
                 />
-                <Text className="edit-hint">
-                  {uploadingAvatar ? '上传中...' : '点击选择'}
-                </Text>
+                <View className="avatar-actions">
+                  <Button
+                    className="avatar-action primary"
+                    openType="chooseAvatar"
+                    disabled={uploadingAvatar}
+                    onChooseAvatar={handleChooseWechatAvatar}
+                  >
+                    {uploadingAvatar ? '上传中...' : '用微信头像'}
+                  </Button>
+                  <Button
+                    className="avatar-action secondary"
+                    disabled={uploadingAvatar}
+                    onClick={() => void handleChooseImage(['album', 'camera'])}
+                  >
+                    相册/拍照上传
+                  </Button>
+                </View>
               </View>
 
               <View className="form-item nickname-input-wrapper">
@@ -326,39 +343,6 @@ export default function Profile() {
               onClick={handleSaveProfile}
             >
               保存资料
-            </Button>
-          </View>
-        </View>
-      )}
-
-      {showAvatarSheet && (
-        <View className="sheet-overlay">
-          <View className="sheet-mask" onClick={() => setShowAvatarSheet(false)} />
-          <View className="avatar-sheet">
-            <Button
-              className="sheet-action"
-              openType="chooseAvatar"
-              onChooseAvatar={handleChooseWechatAvatar}
-            >
-              用微信头像
-            </Button>
-            <Button
-              className="sheet-action"
-              onClick={() => void handleChooseImage(['album'])}
-            >
-              从相册选择
-            </Button>
-            <Button
-              className="sheet-action"
-              onClick={() => void handleChooseImage(['camera'])}
-            >
-              拍照
-            </Button>
-            <Button
-              className="sheet-cancel"
-              onClick={() => setShowAvatarSheet(false)}
-            >
-              取消
             </Button>
           </View>
         </View>

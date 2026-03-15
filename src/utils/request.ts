@@ -1,8 +1,14 @@
 import Taro from '@tarojs/taro';
 
-export const API_BASE_URL =
-  'http://ec2-18-166-113-112.ap-east-1.compute.amazonaws.com:3000/api/v1';
-export const ASSET_BASE_URL = API_BASE_URL.replace(/\/api\/v1$/, '');
+export const API_BASE_URL = __API_BASE_URL__;
+export const ASSET_BASE_URL = __API_ORIGIN__;
+
+export const clearAuthStorage = () => {
+  Taro.removeStorageSync('token');
+  Taro.removeStorageSync('currentUser');
+  Taro.removeStorageSync('backendUser');
+  Taro.removeStorageSync('needsProfileCompletion');
+};
 
 export interface HttpResponse<T = any> {
   success: boolean;
@@ -42,13 +48,17 @@ export const request = async <T = any>(
         if (responseData.success) {
           return responseData.data;
         } else {
-          throw new Error(responseData.error?.message || '请求失败');
+          throw new Error(
+            responseData.error && responseData.error.message
+              ? responseData.error.message
+              : '请求失败'
+          );
         }
       }
       return res.data as any;
     } else {
       if (res.statusCode === 401) {
-        Taro.removeStorageSync('token');
+        clearAuthStorage();
         Taro.navigateTo({ url: '/pages/profile/index' }); // 假设登录在profile页面
       }
       throw new Error('Request failed with status ' + res.statusCode);

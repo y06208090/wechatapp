@@ -3,8 +3,20 @@ import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin'
 import devConfig from './dev'
 import prodConfig from './prod'
 
+const LOCAL_API_ORIGIN = 'http://127.0.0.1:3000'
+const REMOTE_API_ORIGIN = 'http://ec2-18-166-113-112.ap-east-1.compute.amazonaws.com:3000'
+
+const trimTrailingSlash = (value: string) => value.replace(/\/+$/, '')
+
 // https://taro-docs.jd.com/docs/next/config#defineconfig-辅助函数
 export default defineConfig<'webpack5'>(async (merge, { command, mode }) => {
+  const defaultApiOrigin =
+    process.env.NODE_ENV === 'development' ? LOCAL_API_ORIGIN : REMOTE_API_ORIGIN
+  const apiOrigin = trimTrailingSlash(
+    process.env.APP_API_ORIGIN || process.env.TARO_APP_API_ORIGIN || defaultApiOrigin
+  )
+  const apiBaseUrl = `${apiOrigin}/api/v1`
+
   const baseConfig: UserConfigExport<'webpack5'> = {
     projectName: 'wechatapp',
     date: '2026-2-26',
@@ -21,6 +33,8 @@ export default defineConfig<'webpack5'>(async (merge, { command, mode }) => {
       "@tarojs/plugin-generator"
     ],
     defineConstants: {
+      __API_ORIGIN__: JSON.stringify(apiOrigin),
+      __API_BASE_URL__: JSON.stringify(apiBaseUrl),
     },
     copy: {
       patterns: [

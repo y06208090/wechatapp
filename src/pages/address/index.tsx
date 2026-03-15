@@ -6,9 +6,11 @@ import './index.scss'
 
 export default function Address() {
     const [addresses, setAddresses] = useState<any[]>([])
+    const currentInstance = Taro.getCurrentInstance()
+    const router = currentInstance.router
 
     // 选择地址的来源路由标志
-    const from = Taro.getCurrentInstance().router?.params.from
+    const from = router && router.params ? router.params.from : undefined
 
     useLoad(() => {
         Taro.setNavigationBarTitle({ title: '收货地址' })

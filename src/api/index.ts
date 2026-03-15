@@ -333,6 +333,13 @@ export const cancel_order = async (id: string, data?: any): Promise<any> => {
 };
 
 /**
+ * 接口功能：simulate_progress_order，模拟推进订单状态
+ */
+export const simulate_progress_order = async (id: string, data?: any): Promise<any> => {
+  return request<any>(`/orders/${id}/simulate_progress`, 'POST', data);
+};
+
+/**
  * 接口功能：repurchase_order，基于历史订单再次下单
  */
 export const repurchase_order = async (id: string, data?: any): Promise<any> => {

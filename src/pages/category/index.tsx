@@ -2,34 +2,80 @@ import React, { useState, useEffect } from 'react'
 import { View, Text, Image, ScrollView, Input, Navigator } from '@tarojs/components'
 import { mockCategories } from '../../mock/data'
 import { useCart } from '../../store/CartContext'
-import { useStore } from '../../store/StoreContext'
-import { list_categories, list_products } from '../../api'
+import { resolveUserLocation, useStore } from '../../store/StoreContext'
+import { list_categories, list_products, nearby_stores, search_products, select_store } from '../../api'
 import Taro, { useLoad } from '@tarojs/taro'
 import './index.scss'
 
 export default function Category() {
+  const menuButtonRect = Taro.getMenuButtonBoundingClientRect()
+  const systemInfo = Taro.getSystemInfoSync()
+  const statusBarHeight = systemInfo.statusBarHeight || 20
+  const navBarHeight = menuButtonRect.top > 0
+    ? menuButtonRect.bottom - menuButtonRect.top + (menuButtonRect.top - statusBarHeight) * 2
+    : 44
+  const [topMode, setTopMode] = useState<'goods' | 'courier'>('goods')
   const [activeCategoryId, setActiveCategoryId] = useState<string>('')
   const [categories, setCategories] = useState<any[]>([])
   const [products, setProducts] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
+  const [keyword, setKeyword] = useState('')
+  const [searching, setSearching] = useState(false)
+  const [searchResults, setSearchResults] = useState<any[]>([])
+  const [animatedProductId, setAnimatedProductId] = useState('')
+  const [showStoreSheet, setShowStoreSheet] = useState(false)
+  const [nearbyStoreOptions, setNearbyStoreOptions] = useState<any[]>([])
+  const [storeSheetLoading, setStoreSheetLoading] = useState(false)
   const { addItem } = useCart()
-  const { currentStore } = useStore() // 获取当前选中门店
+  const { currentStore, setStore, refreshStore } = useStore() // 获取当前选中门店
+  const currentStoreId = currentStore ? currentStore.id : ''
+  const currentStoreName = currentStore ? currentStore.name : ''
+  const currentStoreDistance =
+    currentStore && (currentStore as any).distance_km
+      ? `${(currentStore as any).distance_km.toFixed(2)}km`
+      : '附近可取'
 
   useLoad(() => {
     // 首次进入加载门店分类
   })
 
   useEffect(() => {
-    if (currentStore && currentStore.id) {
-      fetchCategories(currentStore.id)
+    if (currentStoreId) {
+      fetchCategories(currentStoreId)
     }
-  }, [currentStore])
+  }, [currentStoreId])
 
   useEffect(() => {
-    if (currentStore && currentStore.id && activeCategoryId) {
-      fetchProducts(currentStore.id, activeCategoryId)
+    if (!currentStoreId) {
+      void refreshStore(true)
     }
-  }, [currentStore, activeCategoryId])
+  }, [currentStoreId])
+
+  useEffect(() => {
+    if (currentStoreId && activeCategoryId) {
+      fetchProducts(currentStoreId, activeCategoryId)
+    }
+  }, [currentStoreId, activeCategoryId])
+
+  useEffect(() => {
+    if (keyword.trim()) {
+      return
+    }
+    setSearchResults([])
+  }, [keyword])
+
+  useEffect(() => {
+    const trimmedKeyword = keyword.trim()
+    if (!trimmedKeyword || !currentStoreId) {
+      return
+    }
+
+    const timer = setTimeout(() => {
+      handleSearch(trimmedKeyword)
+    }, 1000)
+
+    return () => clearTimeout(timer)
+  }, [keyword, currentStoreId])
 
   const fetchCategories = async (storeId: string) => {
     try {
@@ -61,15 +107,56 @@ export default function Category() {
     }
   }
 
+  const handleSearch = async (value?: string) => {
+    const nextValue = value !== undefined && value !== null ? value : keyword
+    const nextKeyword = nextValue.trim()
+    setKeyword(nextValue)
+
+    if (!currentStoreId) {
+      Taro.showToast({ title: '请先选择门店', icon: 'none' })
+      return
+    }
+
+    if (!nextKeyword) {
+      setSearchResults([])
+      if (activeCategoryId) {
+        fetchProducts(currentStoreId, activeCategoryId)
+      }
+      return
+    }
+
+    setSearching(true)
+    try {
+      const res = await search_products({
+        store_id: currentStoreId,
+        keyword: nextKeyword,
+        page: 1,
+        page_size: 50,
+      })
+      setSearchResults(res && res.items ? res.items : [])
+    } catch (e) {
+      console.error('搜索商品失败', e)
+      setSearchResults([])
+      Taro.showToast({ title: '搜索失败，请稍后重试', icon: 'none' })
+    } finally {
+      setSearching(false)
+    }
+  }
+
   const handleAddCart = async (e: any, product: any) => {
     e.stopPropagation();
     try {
-      await addItem({
+      const added = await addItem({
         id: product.id,
         name: product.title || product.name,
         price: product.price,
         imageUrl: product.cover_image || product.imageUrl
       });
+      if (!added) {
+        return
+      }
+      setAnimatedProductId(product.id)
+      setTimeout(() => setAnimatedProductId(''), 420)
       Taro.showToast({
         title: '已加入购物车',
         icon: 'success',
@@ -84,14 +171,133 @@ export default function Category() {
     })
   }
 
+  const handleStoreSwitch = async () => {
+    setShowStoreSheet(true)
+    setStoreSheetLoading(true)
+    try {
+      const { lat, lng } = await resolveUserLocation()
+      const res = await nearby_stores({ lat, lng })
+      setNearbyStoreOptions(Array.isArray(res) ? res : [])
+    } catch (e: any) {
+      Taro.showToast({ title: e.message || '获取附近门店失败', icon: 'none' })
+    } finally {
+      setStoreSheetLoading(false)
+    }
+  }
+
+  const handleQuickSelectStore = async (store: any) => {
+    try {
+      Taro.showLoading({ title: '切换中...' })
+      const token = Taro.getStorageSync('token')
+      if (token) {
+        const res = await select_store({ store_id: store.id })
+        if (res) {
+          setStore(res)
+        }
+      } else {
+        setStore(store)
+      }
+      setShowStoreSheet(false)
+      Taro.showToast({ title: '门店已切换', icon: 'success' })
+    } catch (e: any) {
+      Taro.showToast({ title: e.message || '切换门店失败', icon: 'none' })
+    } finally {
+      Taro.hideLoading()
+    }
+  }
+
+  const handleGoMoreStores = () => {
+    setShowStoreSheet(false)
+    Taro.navigateTo({ url: '/pages/store-select/index' })
+  }
+
+  const handleSwitchTopMode = (mode: 'goods' | 'courier') => {
+    if (mode === 'goods') {
+      setTopMode('goods')
+      return
+    }
+
+    setTopMode('courier')
+    Taro.navigateTo({ url: '/pages/courier/index' })
+    setTimeout(() => setTopMode('goods'), 0)
+  }
+
   // Fallback to mock data if real API yields nothing in dev
   const displayCategories = categories.length > 0 ? categories : mockCategories
-  const displayProducts = products.length > 0 ? products : (activeCategoryId ? (mockCategories.find(c => c.id === activeCategoryId)?.products || []) : [])
+  const activeMockCategory = activeCategoryId ? mockCategories.find(c => c.id === activeCategoryId) : null
+  const categoryProducts = products.length > 0 ? products : (activeMockCategory ? activeMockCategory.products || [] : [])
+  const isSearchMode = keyword.trim().length > 0
+  const displayProducts = isSearchMode ? searchResults : categoryProducts
 
   return (
     <View className="category-page">
-      <View className="search-bar">
-        <Input className="search-input" placeholder="解腻水饮料好喝无腹忧" />
+      <View
+        className="custom-nav-shell"
+        style={{ paddingTop: `${statusBarHeight}px` }}
+      >
+        <View
+          className="custom-nav-row"
+          style={{ minHeight: `${navBarHeight}px` }}
+        >
+          <View className="fulfillment-switch">
+            <View
+              className={`fulfillment-switch__item ${topMode === 'goods' ? 'is-active' : ''}`}
+              onClick={() => handleSwitchTopMode('goods')}
+            >
+              商品
+            </View>
+            <View
+              className={`fulfillment-switch__item ${topMode === 'courier' ? 'is-active' : ''}`}
+              onClick={() => handleSwitchTopMode('courier')}
+            >
+              快递
+            </View>
+          </View>
+          <View className="nav-search-shell">
+            <Text className="nav-search-shell__icon">⌕</Text>
+            <Input
+              className="nav-search-shell__input"
+              placeholder="输入门店商品或品类搜索"
+              value={keyword}
+              confirmType="search"
+              onInput={(e) => setKeyword(e.detail.value)}
+              onConfirm={(e) => handleSearch(e.detail.value)}
+            />
+            {keyword ? (
+              <View
+                className="nav-search-shell__clear"
+                onClick={() => {
+                  setKeyword('')
+                  setSearchResults([])
+                }}
+              >
+                取消
+              </View>
+            ) : null}
+          </View>
+          <View
+            className="custom-nav-actions"
+            style={{ width: `${menuButtonRect.width || 96}px` }}
+          >
+            <View className="custom-nav-pill">
+              <View className="custom-nav-pill__action custom-nav-pill__action--locate" />
+              <View className="custom-nav-pill__divider" />
+              <View className="custom-nav-pill__action custom-nav-pill__action--target" />
+            </View>
+          </View>
+        </View>
+        <View className="top-bar">
+          <View className="store-summary" onClick={handleStoreSwitch}>
+            <View className="store-summary__main">
+              <Text className="store-summary__icon">◎</Text>
+              <Text className="store-summary__name">{currentStoreName || '请选择门店'}</Text>
+              <Text className="store-summary__distance">
+                {currentStoreDistance}
+              </Text>
+            </View>
+            <Text className="store-summary__arrow">{'>'}</Text>
+          </View>
+        </View>
       </View>
 
       <Navigator url="/pages/courier/index" className="courier-banner">
@@ -113,7 +319,11 @@ export default function Category() {
             <View
               key={category.id}
               className={`category-item ${activeCategoryId === category.id ? 'active' : ''}`}
-              onClick={() => setActiveCategoryId(category.id)}
+              onClick={() => {
+                setKeyword('')
+                setSearchResults([])
+                setActiveCategoryId(category.id)
+              }}
             >
               {category.name}
             </View>
@@ -121,6 +331,11 @@ export default function Category() {
         </ScrollView>
 
         <ScrollView className="product-list" scrollY>
+          {isSearchMode ? (
+            <View className="search-summary">
+              {searching ? '搜索中...' : `搜索结果 ${displayProducts.length} 条`}
+            </View>
+          ) : null}
           {displayProducts.length > 0 ? (
             displayProducts.map((product: any) => (
               <View className="product-item" key={product.id} onClick={() => handleGoDetail(product.id)}>
@@ -145,7 +360,10 @@ export default function Category() {
                         <Text className="original-price">¥{((product.original_price || 0) / 100).toFixed(2)}</Text>
                       )}
                     </View>
-                    <View className="add-cart-btn" onClick={(e) => handleAddCart(e, product)}>
+                    <View
+                      className={`add-cart-btn ${animatedProductId === product.id ? 'is-bumping' : ''}`}
+                      onClick={(e) => handleAddCart(e, product)}
+                    >
                       +
                     </View>
                   </View>
@@ -153,10 +371,56 @@ export default function Category() {
               </View>
             ))
           ) : (
-            <View className="empty-state">{loading ? '加载中...' : '该分类下暂无商品~'}</View>
+            <View className="empty-state">
+              {loading || searching ? '加载中...' : isSearchMode ? '没有搜到相关商品' : '该分类下暂无商品~'}
+            </View>
           )}
         </ScrollView>
       </View>
+
+      {showStoreSheet ? (
+        <View className="store-sheet-mask" onClick={() => setShowStoreSheet(false)}>
+          <View className="store-sheet" onClick={(e) => e.stopPropagation()}>
+            <View className="store-sheet__hero">
+              <View className="store-sheet__brand">mini store</View>
+              <Text className="store-sheet__title">原来离你这么近</Text>
+              <Text className="store-sheet__subtitle">优先推荐最近可服务门店，支持快速切换</Text>
+              <Text className="store-sheet__close" onClick={() => setShowStoreSheet(false)}>×</Text>
+            </View>
+            <View className="store-sheet__list">
+              {storeSheetLoading ? (
+                <View className="store-sheet__empty">正在获取附近门店...</View>
+              ) : nearbyStoreOptions.length > 0 ? (
+                nearbyStoreOptions.slice(0, 2).map((store) => (
+                  <View
+                    className="store-sheet__item"
+                    key={store.id}
+                    onClick={() => handleQuickSelectStore(store)}
+                  >
+                    <View className="store-sheet__item-main">
+                      <View className="store-sheet__item-head">
+                        <Text className="store-sheet__item-name">{store.name}</Text>
+                        {currentStoreId === store.id ? (
+                          <Text className="store-sheet__item-badge">当前</Text>
+                        ) : null}
+                      </View>
+                      <Text className="store-sheet__item-meta">
+                        {store.distance_km !== undefined && store.distance_km !== null ? store.distance_km.toFixed(2) : '0.00'}km | {store.address}
+                      </Text>
+                    </View>
+                    <Text className="store-sheet__item-distance">去这里</Text>
+                  </View>
+                ))
+              ) : (
+                <View className="store-sheet__empty">附近暂无可用门店</View>
+              )}
+            </View>
+            <View className="store-sheet__more" onClick={handleGoMoreStores}>
+              更多门店 {'>'}
+            </View>
+          </View>
+        </View>
+      ) : null}
     </View>
   )
 }
