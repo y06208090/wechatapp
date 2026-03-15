@@ -1,7 +1,21 @@
 import Taro from '@tarojs/taro';
 
-export const API_BASE_URL = __API_BASE_URL__;
-export const ASSET_BASE_URL = __API_ORIGIN__;
+const resolveDevtoolsOrigin = () => {
+  try {
+    const systemInfo = Taro.getSystemInfoSync();
+    if (systemInfo && systemInfo.platform === 'devtools') {
+      return 'http://localhost:3000';
+    }
+  } catch (error) {
+    console.warn('[request] failed to detect runtime platform', error);
+  }
+  return '';
+};
+
+const devtoolsOrigin = resolveDevtoolsOrigin();
+
+export const API_BASE_URL = devtoolsOrigin ? `${devtoolsOrigin}/api/v1` : __API_BASE_URL__;
+export const ASSET_BASE_URL = devtoolsOrigin || __API_ORIGIN__;
 
 export const clearAuthStorage = () => {
   Taro.removeStorageSync('token');

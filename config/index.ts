@@ -3,15 +3,16 @@ import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin'
 import devConfig from './dev'
 import prodConfig from './prod'
 
-const LOCAL_API_ORIGIN = 'http://127.0.0.1:3000'
+const LOCAL_API_ORIGIN = 'http://localhost:3000'
 const REMOTE_API_ORIGIN = 'https://ministore.fangweicong.me'
 
 const trimTrailingSlash = (value: string) => value.replace(/\/+$/, '')
 
 // https://taro-docs.jd.com/docs/next/config#defineconfig-辅助函数
 export default defineConfig<'webpack5'>(async (merge, { command, mode }) => {
-  const defaultApiOrigin =
-    process.env.NODE_ENV === 'development' ? LOCAL_API_ORIGIN : REMOTE_API_ORIGIN
+  const isLocalDevelopment =
+    mode === 'development' || process.env.NODE_ENV === 'development'
+  const defaultApiOrigin = isLocalDevelopment ? LOCAL_API_ORIGIN : REMOTE_API_ORIGIN
   const apiOrigin = trimTrailingSlash(
     process.env.APP_API_ORIGIN || process.env.TARO_APP_API_ORIGIN || defaultApiOrigin
   )
@@ -107,7 +108,7 @@ export default defineConfig<'webpack5'>(async (merge, { command, mode }) => {
   }
 
 
-  if (process.env.NODE_ENV === 'development') {
+  if (isLocalDevelopment) {
     // 本地开发构建配置（不混淆压缩）
     return merge({}, baseConfig, devConfig)
   }

@@ -18,38 +18,97 @@
     }
 
     .address-section {
-        .delivery-type {
+        .address-panel__header {
             display: flex;
+            align-items: center;
+            justify-content: space-between;
             margin-bottom: 12px;
-
-            text {
-                padding: 6px 12px;
-                font-size: 14px;
-                color: #333;
-                background: #f0f0f0;
-                border-radius: 16px;
-                margin-right: 12px;
-
-                &.active {
-                    background: rgba(0, 178, 106, 0.1);
-                    color: #00B26A;
-                    font-weight: 500;
-                }
-            }
         }
 
-        .store-info {
-            .name {
-                font-size: 18px;
-                font-weight: bold;
-                display: block;
-                margin-bottom: 4px;
-            }
+        .address-panel__title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #111827;
+        }
 
-            .address {
-                font-size: 13px;
-                color: #999;
-            }
+        .address-panel__switch {
+            padding: 8px 14px;
+            border-radius: 999px;
+            background: rgba(0, 178, 106, 0.1);
+            color: #00b26a;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .address-card {
+            padding: 14px;
+            border-radius: 14px;
+            background: linear-gradient(180deg, #f6fffb 0%, #f3f4f6 100%);
+        }
+
+        .address-card__top {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .address-card__name {
+            font-size: 16px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .address-card__phone {
+            font-size: 13px;
+            color: #4b5563;
+        }
+
+        .address-card__badge {
+            padding: 2px 8px;
+            border-radius: 999px;
+            background: rgba(0, 178, 106, 0.12);
+            color: #00b26a;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .address-card__detail {
+            display: block;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #374151;
+        }
+
+        .address-card__footer {
+            display: flex;
+            align-items: center;
+            margin-top: 12px;
+        }
+
+        .address-card__store {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .address-empty {
+            padding: 18px 14px;
+            border-radius: 14px;
+            background: #f9fafb;
+        }
+
+        .address-empty__title {
+            display: block;
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 8px;
+        }
+
+        .address-empty__action {
+            font-size: 13px;
+            color: #00b26a;
+            font-weight: 600;
         }
     }
 
@@ -107,6 +166,21 @@
         }
     }
 
+    .remark-section {
+        .remark-title {
+            font-size: 14px;
+            margin-bottom: 8px;
+            color: #111827;
+        }
+
+        .remark-input {
+            font-size: 13px;
+            background: #f5f5f5;
+            padding: 8px 12px;
+            border-radius: 4px;
+        }
+    }
+
     .fee-section {
         .fee-row {
             display: flex;
@@ -138,13 +212,13 @@
 
             .price {
                 font-size: 18px;
-                color: #E60012;
+                color: #e60012;
                 font-weight: bold;
             }
         }
 
         .submit-btn {
-            background: #00B26A;
+            background: #00b26a;
             color: #fff;
             padding: 0 24px;
             height: 40px;
@@ -153,6 +227,104 @@
             font-size: 15px;
             font-weight: 500;
         }
+    }
+
+    .address-sheet-mask {
+        position: fixed;
+        inset: 0;
+        background: rgba(17, 24, 39, 0.4);
+        display: flex;
+        align-items: flex-end;
+        z-index: 50;
+    }
+
+    .address-sheet {
+        width: 100%;
+        max-height: 72vh;
+        background: #fff;
+        border-radius: 24px 24px 0 0;
+        padding: 18px 16px calc(16px + env(safe-area-inset-bottom));
+        box-sizing: border-box;
+    }
+
+    .address-sheet__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 14px;
+    }
+
+    .address-sheet__title {
+        font-size: 17px;
+        font-weight: 700;
+        color: #111827;
+    }
+
+    .address-sheet__close {
+        font-size: 24px;
+        color: #9ca3af;
+        line-height: 1;
+    }
+
+    .address-sheet__list {
+        max-height: 50vh;
+    }
+
+    .address-sheet__item {
+        padding: 14px 0;
+        border-bottom: 1px solid #f3f4f6;
+
+        &.is-active {
+            .address-sheet__item-name {
+                color: #00b26a;
+            }
+        }
+    }
+
+    .address-sheet__item-top {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 6px;
+    }
+
+    .address-sheet__item-name {
+        font-size: 15px;
+        font-weight: 700;
+        color: #111827;
+    }
+
+    .address-sheet__item-phone {
+        font-size: 13px;
+        color: #6b7280;
+    }
+
+    .address-sheet__item-badge {
+        padding: 2px 8px;
+        border-radius: 999px;
+        background: rgba(0, 178, 106, 0.1);
+        color: #00b26a;
+        font-size: 11px;
+    }
+
+    .address-sheet__item-detail {
+        display: block;
+        font-size: 13px;
+        line-height: 1.5;
+        color: #6b7280;
+    }
+
+    .address-sheet__footer {
+        margin-top: 14px;
+        height: 46px;
+        line-height: 46px;
+        text-align: center;
+        border-radius: 999px;
+        background: #f3f4f6;
+        color: #111827;
+        font-size: 14px;
+        font-weight: 600;
     }
 
     .empty-checkout {
@@ -182,7 +354,7 @@
             height: 42px;
             line-height: 42px;
             border-radius: 999px;
-            background: #00B26A;
+            background: #00b26a;
             color: #fff;
             font-size: 15px;
             font-weight: 600;

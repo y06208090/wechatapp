@@ -134,6 +134,9 @@ export default function OrderDetail() {
     const storeName = store && store.name ? store.name : '小象超市门店'
     const storeAddress = store && store.address ? store.address : '门店地址待确认'
     const goodsSectionStoreName = store && store.name ? store.name : '小象超市'
+    const deliveryAddressText = address
+        ? address.full_address || [address.address, address.detail].filter(Boolean).join(' ')
+        : ''
 
     return (
         <View className="order-detail-page">
@@ -155,7 +158,7 @@ export default function OrderDetail() {
                                 {address.name} {address.phone}
                             </View>
                             <View style={{ fontSize: '13px', color: '#666' }}>
-                                {address.address} {address.detail}
+                                {deliveryAddressText}
                             </View>
                         </View>
                     ) : (

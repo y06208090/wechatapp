@@ -2,9 +2,10 @@ import Taro, { useDidShow } from '@tarojs/taro'
 import React, { useEffect, useMemo, useState } from 'react'
 import { View, Text, ScrollView, Image, Input } from '@tarojs/components'
 
-import { create_order, pay_order, preview_order } from '../../api'
+import { create_order, list_addresses, pay_order, preview_order } from '../../api'
 import { useCart } from '../../store/CartContext'
 import { useStore } from '../../store/StoreContext'
+import { AddressRecord, normalizeAddresses } from '../../utils/address'
 
 import './index.scss'
 
@@ -14,21 +15,19 @@ export default function Checkout() {
     const [previewData, setPreviewData] = useState<any>(null)
     const [loading, setLoading] = useState(false)
     const [remark, setRemark] = useState('')
-    const [deliveryType, setDeliveryType] = useState<'pickup' | 'delivery'>('pickup')
-    const [selectedAddress, setSelectedAddress] = useState<any>(null)
+    const [addresses, setAddresses] = useState<AddressRecord[]>([])
+    const [selectedAddress, setSelectedAddress] = useState<AddressRecord | null>(null)
+    const [addressSheetVisible, setAddressSheetVisible] = useState(false)
     const currentStoreId = currentStore ? currentStore.id : ''
     const selectedAddressId = selectedAddress ? selectedAddress.id : undefined
     const currentStoreName = currentStore ? currentStore.name : '未知门店'
-    const currentStoreAddress = currentStore ? currentStore.address : '未能获取门店地址'
+    const hasMultipleAddresses = addresses.length > 1
 
     const selectedItems = useMemo(
-        () => items.filter((item) => item.selected),
+        () => items.filter((item) => item.selected && item.available !== false),
         [items],
     )
     const currentDistanceKm = useMemo(() => {
-        if (deliveryType !== 'delivery') {
-            return undefined
-        }
         if (!selectedAddress || !currentStore) {
             return undefined
         }
@@ -38,26 +37,42 @@ export default function Checkout() {
             selectedAddress.lat,
             selectedAddress.lng,
         )
-    }, [deliveryType, selectedAddress, currentStore])
+    }, [selectedAddress, currentStore])
 
     useDidShow(() => {
-        const addr = Taro.getStorageSync('selectedAddress')
-        if (addr) {
-            setSelectedAddress(addr)
-            Taro.removeStorageSync('selectedAddress')
-        }
+        void fetchAddresses()
     })
 
     useEffect(() => {
-        if (selectedItems.length > 0 && currentStoreId) {
+        if (selectedItems.length > 0 && currentStoreId && selectedAddress) {
             void handlePreview()
-        } else {
-            setPreviewData(null)
+            return
         }
-    }, [deliveryType, selectedAddress, currentStoreId, items])
+        setPreviewData(null)
+    }, [selectedAddress, currentStoreId, items])
+
+    const fetchAddresses = async () => {
+        try {
+            const result = await list_addresses()
+            const nextAddresses = normalizeAddresses(result)
+            setAddresses(nextAddresses)
+
+            if (nextAddresses.length === 0) {
+                setSelectedAddress(null)
+                return
+            }
+
+            const defaultAddress = nextAddresses.find((item) => item.isDefault)
+            const preservedAddress =
+                selectedAddress && nextAddresses.find((item) => item.id === selectedAddress.id)
+            setSelectedAddress(preservedAddress || defaultAddress || nextAddresses[0])
+        } catch (e: any) {
+            Taro.showToast({ title: e.message || '获取地址失败', icon: 'none' })
+        }
+    }
 
     const handlePreview = async () => {
-        if (!currentStoreId || selectedItems.length === 0) {
+        if (!currentStoreId || selectedItems.length === 0 || !selectedAddress) {
             return
         }
 
@@ -71,11 +86,9 @@ export default function Checkout() {
                     price_snapshot: item.price,
                     qty: item.quantity,
                 })),
-                delivery_type: deliveryType === 'pickup' ? 'PICKUP' : 'DELIVERY',
-                distance_km: deliveryType === 'delivery' ? currentDistanceKm : undefined,
-            }
-            if (deliveryType === 'delivery' && selectedAddressId) {
-                formData.address_id = selectedAddressId
+                delivery_type: 'DELIVERY',
+                distance_km: currentDistanceKm,
+                address_id: selectedAddressId,
             }
 
             const res = await preview_order(formData)
@@ -96,11 +109,11 @@ export default function Checkout() {
             Taro.showToast({ title: '请先选择商品', icon: 'none' })
             return
         }
-        if (deliveryType === 'delivery' && !selectedAddress) {
+        if (!selectedAddress) {
             Taro.showToast({ title: '请选择收货地址', icon: 'none' })
             return
         }
-        if (deliveryType === 'delivery' && currentDistanceKm === undefined) {
+        if (currentDistanceKm === undefined) {
             Taro.showToast({ title: '无法计算配送距离', icon: 'none' })
             return
         }
@@ -115,13 +128,10 @@ export default function Checkout() {
                     price_snapshot: item.price,
                     qty: item.quantity,
                 })),
-                delivery_type: deliveryType === 'pickup' ? 'PICKUP' : 'DELIVERY',
-                distance_km: deliveryType === 'delivery' ? currentDistanceKm : undefined,
-                address_id: deliveryType === 'delivery' ? selectedAddressId : undefined,
-                address_snapshot:
-                    deliveryType === 'delivery'
-                        ? buildAddressSnapshot(selectedAddress)
-                        : undefined,
+                delivery_type: 'DELIVERY',
+                distance_km: currentDistanceKm,
+                address_id: selectedAddressId,
+                address_snapshot: buildAddressSnapshot(selectedAddress),
                 store_snapshot: buildStoreSnapshot(currentStore),
                 remark: remark.trim() || undefined,
             })
@@ -146,8 +156,9 @@ export default function Checkout() {
         }
     }
 
-    const goAddressSelect = () => {
-        Taro.navigateTo({ url: '/pages/address/index?from=checkout' })
+    const goAddressManage = () => {
+        setAddressSheetVisible(false)
+        Taro.navigateTo({ url: '/pages/address/index' })
     }
 
     if (selectedItems.length === 0) {
@@ -171,39 +182,33 @@ export default function Checkout() {
         <View className="checkout-page">
             <ScrollView scrollY className="content">
                 <View className="section address-section">
-                    <View className="delivery-type">
-                        <Text
-                            className={deliveryType === 'pickup' ? 'active' : ''}
-                            onClick={() => setDeliveryType('pickup')}
-                        >
-                            到店自提
-                        </Text>
-                        <Text
-                            className={deliveryType === 'delivery' ? 'active' : ''}
-                            onClick={() => setDeliveryType('delivery')}
-                        >
-                            外卖配送
-                        </Text>
+                    <View className="address-panel__header">
+                        <Text className="address-panel__title">配送地址</Text>
+                        {hasMultipleAddresses ? (
+                            <View className="address-panel__switch" onClick={() => setAddressSheetVisible(true)}>
+                                切换地址
+                            </View>
+                        ) : null}
                     </View>
 
-                    {deliveryType === 'pickup' ? (
-                        <View className="store-info">
-                            <Text className="name">{currentStoreName}</Text>
-                            <Text className="address">{currentStoreAddress}</Text>
+                    {selectedAddress ? (
+                        <View className="address-card">
+                            <View className="address-card__top">
+                                <Text className="address-card__name">{selectedAddress.name}</Text>
+                                <Text className="address-card__phone">{selectedAddress.phone}</Text>
+                                {selectedAddress.isDefault ? (
+                                    <Text className="address-card__badge">默认地址</Text>
+                                ) : null}
+                            </View>
+                            <Text className="address-card__detail">{selectedAddress.detail}</Text>
+                            <View className="address-card__footer">
+                                <Text className="address-card__store">由 {currentStoreName} 配送</Text>
+                            </View>
                         </View>
                     ) : (
-                        <View className="address-info" onClick={goAddressSelect}>
-                            {selectedAddress ? (
-                                <>
-                                    <View className="contact">
-                                        <Text className="name">{selectedAddress.contact_name || selectedAddress.name}</Text>
-                                        <Text className="phone">{selectedAddress.phone}</Text>
-                                    </View>
-                                    <View className="detail">{selectedAddress.address} {selectedAddress.detail}</View>
-                                </>
-                            ) : (
-                                <Text className="placeholder">请选择收货地址 {'>'}</Text>
-                            )}
+                        <View className="address-empty">
+                            <Text className="address-empty__title">还没有收货地址</Text>
+                            <Text className="address-empty__action">请先去地址页新增</Text>
                         </View>
                     )}
                 </View>
@@ -224,13 +229,13 @@ export default function Checkout() {
                     ))}
                 </View>
 
-                <View className="section remark-section" style={{ padding: '16px', background: '#fff', borderRadius: '8px', marginBottom: '12px' }}>
-                    <View style={{ fontSize: '14px', marginBottom: '8px' }}>订单备注</View>
+                <View className="section remark-section">
+                    <View className="remark-title">订单备注</View>
                     <Input
                         value={remark}
                         onInput={(e) => setRemark(e.detail.value)}
                         placeholder="请输入备注，选填无接触配送等"
-                        style={{ fontSize: '13px', background: '#f5f5f5', padding: '8px 12px', borderRadius: '4px' }}
+                        className="remark-input"
                     />
                 </View>
 
@@ -261,6 +266,41 @@ export default function Checkout() {
                     {loading ? '处理中...' : '去支付'}
                 </View>
             </View>
+
+            {addressSheetVisible ? (
+                <View className="address-sheet-mask" onClick={() => setAddressSheetVisible(false)}>
+                    <View className="address-sheet" onClick={(event) => event.stopPropagation()}>
+                        <View className="address-sheet__header">
+                            <Text className="address-sheet__title">选择配送地址</Text>
+                            <Text className="address-sheet__close" onClick={() => setAddressSheetVisible(false)}>×</Text>
+                        </View>
+                        <ScrollView scrollY className="address-sheet__list">
+                            {addresses.map((address) => (
+                                <View
+                                    key={address.id}
+                                    className={`address-sheet__item ${selectedAddressId === address.id ? 'is-active' : ''}`}
+                                    onClick={() => {
+                                        setSelectedAddress(address)
+                                        setAddressSheetVisible(false)
+                                    }}
+                                >
+                                    <View className="address-sheet__item-top">
+                                        <Text className="address-sheet__item-name">{address.name}</Text>
+                                        <Text className="address-sheet__item-phone">{address.phone}</Text>
+                                        {address.isDefault ? (
+                                            <Text className="address-sheet__item-badge">默认</Text>
+                                        ) : null}
+                                    </View>
+                                    <Text className="address-sheet__item-detail">{address.detail}</Text>
+                                </View>
+                            ))}
+                        </ScrollView>
+                        <View className="address-sheet__footer" onClick={goAddressManage}>
+                            管理地址
+                        </View>
+                    </View>
+                </View>
+            ) : null}
         </View>
     )
 }
@@ -280,10 +320,11 @@ const buildAddressSnapshot = (address: any) => {
 
     return {
         address_id: address.id,
-        name: address.contact_name || address.name,
+        name: address.name,
         phone: address.phone,
-        address: address.address,
-        detail: address.detail,
+        address: address.detail,
+        detail: '',
+        full_address: address.detail,
         lat: address.lat,
         lng: address.lng,
     }

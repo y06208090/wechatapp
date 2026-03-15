@@ -1,131 +1,342 @@
 .courier-page {
   min-height: 100vh;
-  background-color: #f7f8fa;
-  padding-bottom: 200rpx;
+  background:
+    radial-gradient(circle at top right, rgba(16, 185, 129, 0.14), transparent 26%),
+    linear-gradient(180deg, #f5fff9 0%, #f7f8fa 18%, #f7f8fa 100%);
+  padding-bottom: 220rpx;
 
   .header-banner {
-    background: linear-gradient(135deg, #00B26A, #00d680);
-    padding: 60rpx 40rpx;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+    padding: 64rpx 36rpx 88rpx;
+    background: linear-gradient(135deg, #00b26a 0%, #00ce7b 100%);
+    border-bottom-left-radius: 36rpx;
+    border-bottom-right-radius: 36rpx;
+    box-shadow: 0 18rpx 48rpx rgba(0, 178, 106, 0.18);
 
     .title {
-      font-size: 44rpx;
-      font-weight: 600;
+      display: block;
+      font-size: 46rpx;
+      font-weight: 700;
       color: #fff;
-      margin-bottom: 16rpx;
+      margin-bottom: 14rpx;
     }
 
     .subtitle {
-      font-size: 28rpx;
-      color: rgba(255, 255, 255, 0.8);
+      display: block;
+      font-size: 26rpx;
+      line-height: 1.6;
+      color: rgba(255, 255, 255, 0.88);
     }
   }
 
   .form-container {
-    background-color: #fff;
-    border-radius: 24rpx;
-    margin: -40rpx 30rpx 0;
-    padding: 20rpx 30rpx;
-    box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.05);
     position: relative;
-    z-index: 10;
+    z-index: 2;
+    margin: -44rpx 24rpx 0;
+    padding: 18rpx 28rpx;
+    background: rgba(255, 255, 255, 0.96);
+    border-radius: 28rpx;
+    box-shadow: 0 12rpx 36rpx rgba(15, 23, 42, 0.08);
+    backdrop-filter: blur(12rpx);
+  }
 
-    .form-item {
+  .address-panel {
+    padding: 18rpx 0 26rpx;
+    border-bottom: 1rpx solid #edf2f7;
+
+    &__header {
       display: flex;
-      flex-direction: column;
-      padding: 30rpx 0;
-      border-bottom: 1rpx solid #f0f0f0;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18rpx;
+    }
 
-      &:last-child {
-        border-bottom: none;
+    &__title {
+      font-size: 28rpx;
+      font-weight: 600;
+      color: #1f2937;
+    }
+
+    &__switch {
+      min-width: 140rpx;
+      height: 56rpx;
+      line-height: 56rpx;
+      border-radius: 999rpx;
+      background: #ecfdf5;
+      color: #059669;
+      font-size: 24rpx;
+      text-align: center;
+    }
+  }
+
+  .address-card {
+    padding: 22rpx 24rpx;
+    border-radius: 20rpx;
+    background: linear-gradient(135deg, #f0fdf4 0%, #ecfeff 100%);
+    border: 1rpx solid rgba(16, 185, 129, 0.12);
+
+    &__top {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12rpx;
+      margin-bottom: 10rpx;
+    }
+
+    &__name {
+      font-size: 30rpx;
+      font-weight: 700;
+      color: #111827;
+    }
+
+    &__phone {
+      font-size: 24rpx;
+      color: #4b5563;
+    }
+
+    &__badge {
+      padding: 4rpx 14rpx;
+      border-radius: 999rpx;
+      background: #00b26a;
+      color: #fff;
+      font-size: 20rpx;
+    }
+
+    &__detail {
+      display: block;
+      font-size: 25rpx;
+      line-height: 1.6;
+      color: #374151;
+    }
+  }
+
+  .address-empty {
+    padding: 28rpx 24rpx;
+    border-radius: 20rpx;
+    background: #f9fafb;
+    border: 1rpx dashed #cbd5e1;
+
+    &__title {
+      display: block;
+      margin-bottom: 12rpx;
+      font-size: 28rpx;
+      color: #334155;
+      font-weight: 600;
+    }
+
+    &__action {
+      display: inline-block;
+      color: #00b26a;
+      font-size: 24rpx;
+      font-weight: 600;
+    }
+  }
+
+  .form-item {
+    display: flex;
+    flex-direction: column;
+    padding: 28rpx 0;
+    border-bottom: 1rpx solid #edf2f7;
+
+    &:last-child {
+      border-bottom: none;
+      padding-bottom: 12rpx;
+    }
+
+    .label {
+      font-size: 28rpx;
+      color: #111827;
+      font-weight: 600;
+      margin-bottom: 18rpx;
+
+      .required {
+        color: #ef4444;
+        margin-right: 8rpx;
       }
+    }
 
-      .label {
+    .input,
+    .picker-value {
+      font-size: 30rpx;
+      color: #1f2937;
+      min-height: 40rpx;
+    }
+
+    .picker-value.placeholder {
+      color: #9ca3af;
+    }
+
+    .field-hint {
+      display: block;
+      margin-top: 14rpx;
+      font-size: 22rpx;
+      color: #6b7280;
+      line-height: 1.5;
+    }
+
+    &.textarea-item {
+      .textarea {
+        width: 100%;
+        min-height: 180rpx;
+        background: #f8fafc;
+        border-radius: 18rpx;
+        padding: 20rpx;
+        box-sizing: border-box;
         font-size: 28rpx;
-        color: #333;
-        font-weight: 500;
-        margin-bottom: 20rpx;
-
-        .required {
-          color: #ff4d4f;
-          margin-right: 8rpx;
-        }
-      }
-
-      .input {
-        font-size: 30rpx;
-        color: #333;
-      }
-
-      &.picker-item {
-        .picker-value {
-          font-size: 30rpx;
-          color: #333;
-
-          &.placeholder {
-            color: #999;
-          }
-        }
-      }
-
-      &.textarea-item {
-        .textarea {
-          width: 100%;
-          height: 160rpx;
-          background-color: #f7f8fa;
-          border-radius: 12rpx;
-          padding: 20rpx;
-          box-sizing: border-box;
-          font-size: 28rpx;
-          color: #333;
-        }
+        color: #1f2937;
       }
     }
   }
 
   .submit-bar {
     position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 120rpx;
-    background-color: #fff;
+    left: 24rpx;
+    right: 24rpx;
+    bottom: calc(24rpx + env(safe-area-inset-bottom));
+    height: 112rpx;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 40rpx;
-    box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.06);
-    z-index: 100;
+    gap: 24rpx;
+    padding: 0 24rpx 0 28rpx;
+    background: rgba(255, 255, 255, 0.98);
+    border-radius: 28rpx;
+    box-shadow: 0 12rpx 36rpx rgba(15, 23, 42, 0.12);
+    z-index: 30;
 
     .price-info {
+      display: flex;
+      flex-direction: column;
+
       .label {
-        font-size: 28rpx;
-        color: #666;
+        font-size: 22rpx;
+        color: #6b7280;
+        margin-bottom: 8rpx;
       }
 
       .price {
         font-size: 40rpx;
-        font-weight: bold;
-        color: #ff4d4f;
+        font-weight: 700;
+        color: #ef4444;
       }
     }
 
     .submit-btn {
       margin: 0;
-      width: 240rpx;
-      height: 80rpx;
-      line-height: 80rpx;
-      background-color: #00B26A;
+      min-width: 252rpx;
+      height: 82rpx;
+      line-height: 82rpx;
+      border-radius: 999rpx;
+      background: linear-gradient(135deg, #00b26a 0%, #00cb77 100%);
       color: #fff;
-      font-size: 32rpx;
-      border-radius: 40rpx;
-      text-align: center;
-      
-      &:active {
-        background-color: #00995a;
+      font-size: 30rpx;
+      font-weight: 700;
+      box-shadow: 0 10rpx 20rpx rgba(0, 178, 106, 0.22);
+
+      &::after {
+        border: none;
       }
+    }
+  }
+
+  .address-sheet-mask {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    background: rgba(15, 23, 42, 0.46);
+    display: flex;
+    align-items: flex-end;
+  }
+
+  .address-sheet {
+    width: 100%;
+    max-height: 72vh;
+    background: #fff;
+    border-top-left-radius: 32rpx;
+    border-top-right-radius: 32rpx;
+    padding: 24rpx 24rpx calc(24rpx + env(safe-area-inset-bottom));
+    box-sizing: border-box;
+
+    &__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20rpx;
+    }
+
+    &__title {
+      font-size: 32rpx;
+      font-weight: 700;
+      color: #111827;
+    }
+
+    &__close {
+      font-size: 48rpx;
+      line-height: 1;
+      color: #9ca3af;
+      padding: 6rpx 10rpx;
+    }
+
+    &__list {
+      max-height: 50vh;
+    }
+
+    &__item {
+      padding: 24rpx 20rpx;
+      border-radius: 22rpx;
+      background: #f8fafc;
+      margin-bottom: 16rpx;
+      border: 1rpx solid transparent;
+
+      &.is-active {
+        background: #f0fdf4;
+        border-color: rgba(0, 178, 106, 0.24);
+      }
+    }
+
+    &__item-top {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10rpx;
+      margin-bottom: 8rpx;
+    }
+
+    &__item-name {
+      font-size: 28rpx;
+      font-weight: 700;
+      color: #111827;
+    }
+
+    &__item-phone {
+      font-size: 24rpx;
+      color: #6b7280;
+    }
+
+    &__item-badge {
+      padding: 4rpx 12rpx;
+      border-radius: 999rpx;
+      background: #00b26a;
+      color: #fff;
+      font-size: 20rpx;
+    }
+
+    &__item-detail {
+      display: block;
+      font-size: 24rpx;
+      line-height: 1.6;
+      color: #374151;
+    }
+
+    &__footer {
+      height: 82rpx;
+      line-height: 82rpx;
+      border-radius: 999rpx;
+      background: #111827;
+      color: #fff;
+      text-align: center;
+      font-size: 28rpx;
+      font-weight: 600;
+      margin-top: 10rpx;
     }
   }
 }

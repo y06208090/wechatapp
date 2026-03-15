@@ -1,0 +1,95 @@
+.address-edit-page {
+  min-height: 100vh;
+  background: #f7f8fa;
+  padding: 24rpx;
+  box-sizing: border-box;
+
+  .form-card {
+    background: #fff;
+    border-radius: 24rpx;
+    padding: 20rpx 24rpx;
+  }
+
+  .field {
+    padding: 18rpx 0 24rpx;
+    border-bottom: 1rpx solid #f1f5f9;
+
+    &:last-child {
+      border-bottom: none;
+      padding-bottom: 12rpx;
+    }
+  }
+
+  .field__label {
+    display: block;
+    margin-bottom: 12rpx;
+    font-size: 26rpx;
+    color: #374151;
+    font-weight: 600;
+  }
+
+  .field__input,
+  .field__textarea {
+    width: 100%;
+    font-size: 30rpx;
+    color: #111827;
+  }
+
+  .field__textarea {
+    min-height: 160rpx;
+    line-height: 1.6;
+  }
+
+  .field__hint {
+    display: block;
+    margin-top: 12rpx;
+    font-size: 22rpx;
+    color: #6b7280;
+  }
+
+  .field--switch {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .location-action {
+    margin-top: 20rpx;
+    height: 76rpx;
+    line-height: 76rpx;
+    border-radius: 999rpx;
+    background: #ecfdf5;
+    color: #059669;
+    font-size: 28rpx;
+    text-align: center;
+  }
+
+  .submit-bar {
+    display: flex;
+    gap: 20rpx;
+    margin-top: 28rpx;
+    padding-bottom: calc(28rpx + env(safe-area-inset-bottom));
+  }
+
+  .submit-btn,
+  .delete-btn {
+    flex: 1;
+    height: 88rpx;
+    line-height: 88rpx;
+    border-radius: 999rpx;
+    font-size: 30rpx;
+    font-weight: 600;
+    text-align: center;
+  }
+
+  .submit-btn {
+    background: #00b26a;
+    color: #fff;
+  }
+
+  .delete-btn {
+    background: #fff;
+    color: #ef4444;
+    border: 1rpx solid #fecaca;
+  }
+}

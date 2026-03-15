@@ -9,6 +9,13 @@ export const list_addresses = async (): Promise<any> => {
 };
 
 /**
+ * 接口功能：get_address，查询指定收货地址详情
+ */
+export const get_address = async (id: string): Promise<any> => {
+  return request<any>(`/addresses/${id}`, 'GET', undefined);
+};
+
+/**
  * 接口功能：create_address，创建用户收货地址
  */
 export const create_address = async (data?: any): Promise<any> => {

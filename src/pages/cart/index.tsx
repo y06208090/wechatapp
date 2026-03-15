@@ -1,5 +1,5 @@
 import { View, Text, Image, ScrollView } from '@tarojs/components'
-import Taro from '@tarojs/taro'
+import Taro, { useDidShow } from '@tarojs/taro'
 import { useCart } from '../../store/CartContext'
 import './index.scss'
 
@@ -11,12 +11,19 @@ export default function Cart() {
     toggleSelectAll,
     totalPrice,
     isAllSelected,
+    syncCart,
+    syncing,
   } = useCart()
 
-  const handleCheckout = () => {
-    const selectedItemsCount = items.filter(item => item.selected).length;
+  useDidShow(() => {
+    void syncCart()
+  })
+
+  const handleCheckout = async () => {
+    const latestItems = await syncCart()
+    const selectedItemsCount = latestItems.filter(item => item.selected && item.available !== false).length;
     if (selectedItemsCount === 0) {
-      Taro.showToast({ title: '尚未选择商品', icon: 'none' })
+      Taro.showToast({ title: '请先选择可结算商品', icon: 'none' })
       return
     }
     Taro.navigateTo({
@@ -47,23 +54,54 @@ export default function Cart() {
 
   return (
     <View className="cart-page">
+      {syncing ? (
+        <View className="sync-tip">正在同步购物车和商品状态...</View>
+      ) : null}
       <ScrollView className="cart-list" scrollY>
         <View className="cart-list-inner">
           {items.map((item) => (
-            <View className="cart-item" key={item.id}>
+            <View className={`cart-item ${item.available === false ? 'is-disabled' : ''}`} key={item.id}>
               <View
-                className={`checkbox ${item.selected ? 'checked' : ''}`}
-                onClick={() => toggleSelect(item.id)}
+                className={`checkbox ${item.selected ? 'checked' : ''} ${item.available === false ? 'disabled' : ''}`}
+                onClick={() => {
+                  if (item.available === false) {
+                    return
+                  }
+                  toggleSelect(item.id)
+                }}
               ></View>
               <Image className="item-img" src={item.imageUrl} mode="aspectFill" />
               <View className="item-info">
                 <View className="name">{item.name}</View>
+                {item.available === false ? (
+                  <Text className="invalid-reason">{item.invalidReason || '当前不可购买'}</Text>
+                ) : null}
                 <View className="bottom-row">
                   <Text className="price">¥{((item.price || 0) / 100).toFixed(2)}</Text>
                   <View className="quantity-control">
-                    <View className="btn" onClick={() => updateQuantity(item.id, item.quantity - 1)}>-</View>
+                    <View
+                      className={`btn ${item.available === false ? 'disabled' : ''}`}
+                      onClick={() => {
+                        if (item.available === false) {
+                          return
+                        }
+                        void updateQuantity(item.id, item.quantity - 1)
+                      }}
+                    >
+                      -
+                    </View>
                     <Text className="num">{item.quantity}</Text>
-                    <View className="btn" onClick={() => updateQuantity(item.id, item.quantity + 1)}>+</View>
+                    <View
+                      className={`btn ${item.available === false ? 'disabled' : ''}`}
+                      onClick={() => {
+                        if (item.available === false) {
+                          return
+                        }
+                        void updateQuantity(item.id, item.quantity + 1)
+                      }}
+                    >
+                      +
+                    </View>
                   </View>
                 </View>
               </View>
@@ -89,7 +127,7 @@ export default function Cart() {
           </View>
           <View
             className={`checkout-btn ${totalPrice > 0 ? 'active' : ''}`}
-            onClick={handleCheckout}
+            onClick={() => void handleCheckout()}
           >
             结算
           </View>
