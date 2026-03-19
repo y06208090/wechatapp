@@ -13,6 +13,7 @@ declare module '*.styl';
 
 declare const __API_ORIGIN__: string;
 declare const __API_BASE_URL__: string;
+declare const __TENCENT_MAP_KEY__: string;
 
 declare namespace NodeJS {
   interface ProcessEnv {
@@ -28,6 +29,7 @@ declare namespace NodeJS {
     TARO_APP_ID: string
     APP_API_ORIGIN?: string
     TARO_APP_API_ORIGIN?: string
+    TARO_APP_TENCENT_MAP_KEY?: string
   }
 }
 

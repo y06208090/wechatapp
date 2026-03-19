@@ -89,6 +89,11 @@
   }
 }
 
+.nav-capsule-spacer {
+  flex: 0 0 auto;
+  height: 1px;
+}
+
 .custom-nav-actions {
   display: flex;
   justify-content: flex-end;

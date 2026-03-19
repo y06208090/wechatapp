@@ -46,7 +46,7 @@ export default function Profile() {
     const token = Taro.getStorageSync('token')
     if (!token || !userInfo.isLoggedIn) {
       setShowProfilePopup(false)
-      Taro.navigateTo({ url: '/pages/login/index' })
+      // Taro.navigateTo({ url: '/pages/login/index' })
       return
     }
 

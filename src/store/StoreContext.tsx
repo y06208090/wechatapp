@@ -23,7 +23,7 @@ const StoreContext = createContext<StoreContextType | undefined>(undefined)
 
 export const resolveUserLocation = async () => {
     const settings = await new Promise<WechatMiniprogram.GetSettingSuccessCallbackResult>((resolve, reject) => {
-        wx.getSetting({
+        Taro.getSetting({
             success: resolve,
             fail: reject,
         })
@@ -33,7 +33,7 @@ export const resolveUserLocation = async () => {
     if (!hasPermission) {
         try {
             await new Promise<void>((resolve, reject) => {
-                wx.authorize({
+                Taro.authorize({
                     scope: 'scope.userLocation',
                     success: () => resolve(),
                     fail: reject,
@@ -51,7 +51,7 @@ export const resolveUserLocation = async () => {
             }
 
             const openRes = await new Promise<WechatMiniprogram.OpenSettingSuccessCallbackResult>((resolve, reject) => {
-                wx.openSetting({
+                Taro.openSetting({
                     success: resolve,
                     fail: reject,
                 })
@@ -63,7 +63,7 @@ export const resolveUserLocation = async () => {
     }
 
     const location = await new Promise<WechatMiniprogram.GetLocationSuccessCallbackResult>((resolve, reject) => {
-        wx.getLocation({
+        Taro.getLocation({
             type: 'gcj02',
             success: resolve,
             fail: reject,

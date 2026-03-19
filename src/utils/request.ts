@@ -4,12 +4,12 @@ const resolveDevtoolsOrigin = () => {
   try {
     const systemInfo = Taro.getSystemInfoSync();
     if (systemInfo && systemInfo.platform === 'devtools') {
-      return 'http://localhost:3000';
+      return 'http://ec2-18-166-113-112.ap-east-1.compute.amazonaws.com:3000';
     }
   } catch (error) {
     console.warn('[request] failed to detect runtime platform', error);
   }
-  return '';
+  return 'https://ministore.fangweicong.me';
 };
 
 const devtoolsOrigin = resolveDevtoolsOrigin();

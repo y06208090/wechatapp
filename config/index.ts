@@ -17,6 +17,8 @@ export default defineConfig<'webpack5'>(async (merge, { command, mode }) => {
     process.env.APP_API_ORIGIN || process.env.TARO_APP_API_ORIGIN || defaultApiOrigin
   )
   const apiBaseUrl = `${apiOrigin}/api/v1`
+  const tencentMapKey = process.env.TARO_APP_TENCENT_MAP_KEY || ''
+console.log(tencentMapKey,21);
 
   const baseConfig: UserConfigExport<'webpack5'> = {
     projectName: 'wechatapp',
@@ -36,6 +38,7 @@ export default defineConfig<'webpack5'>(async (merge, { command, mode }) => {
     defineConstants: {
       __API_ORIGIN__: JSON.stringify(apiOrigin),
       __API_BASE_URL__: JSON.stringify(apiBaseUrl),
+      __TENCENT_MAP_KEY__: JSON.stringify(tencentMapKey),
     },
     copy: {
       patterns: [
