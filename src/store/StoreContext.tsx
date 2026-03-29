@@ -22,23 +22,19 @@ interface StoreContextType {
 const StoreContext = createContext<StoreContextType | undefined>(undefined)
 
 export const resolveUserLocation = async () => {
-    const settings = await new Promise<WechatMiniprogram.GetSettingSuccessCallbackResult>((resolve, reject) => {
-        Taro.getSetting({
-            success: resolve,
-            fail: reject,
-        })
-    })
-    const hasPermission = settings.authSetting['scope.userLocation']
+    let settings: any;
+    try {
+        settings = await Taro.getSetting()
+    } catch (err) {
+        console.warn('获取设置失败', err)
+        settings = { authSetting: {} }
+    }
+
+    const hasPermission = settings?.authSetting?.['scope.userLocation']
 
     if (!hasPermission) {
         try {
-            await new Promise<void>((resolve, reject) => {
-                Taro.authorize({
-                    scope: 'scope.userLocation',
-                    success: () => resolve(),
-                    fail: reject,
-                })
-            })
+            await Taro.authorize({ scope: 'scope.userLocation' })
         } catch (_error) {
             const modal = await Taro.showModal({
                 title: '需要位置权限',
@@ -50,28 +46,27 @@ export const resolveUserLocation = async () => {
                 throw new Error('未授予定位权限')
             }
 
-            const openRes = await new Promise<WechatMiniprogram.OpenSettingSuccessCallbackResult>((resolve, reject) => {
-                Taro.openSetting({
-                    success: resolve,
-                    fail: reject,
-                })
-            })
-            if (!openRes.authSetting['scope.userLocation']) {
+            try {
+                const openRes = await Taro.openSetting()
+                if (!openRes.authSetting['scope.userLocation']) {
+                    throw new Error('未授予定位权限')
+                }
+            } catch (err) {
+                console.warn('openSetting err', err)
                 throw new Error('未授予定位权限')
             }
         }
     }
 
-    const location = await new Promise<WechatMiniprogram.GetLocationSuccessCallbackResult>((resolve, reject) => {
-        Taro.getLocation({
-            type: 'gcj02',
-            success: resolve,
-            fail: reject,
-        })
-    })
-    return {
-        lat: location.latitude,
-        lng: location.longitude,
+    try {
+        const location = await Taro.getLocation({ type: 'gcj02' })
+        return {
+            lat: location.latitude,
+            lng: location.longitude,
+        }
+    } catch (err) {
+        console.warn('getLocation err', err)
+        throw new Error('获取位置信息失败')
     }
 }
 
@@ -95,11 +90,14 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
 
     const refreshCurrentStore = async (allowLocationFallback: boolean = true) => {
+        console.log(allowLocationFallback, 'allowLocationFallback');
+
         try {
             const token = Taro.getStorageSync('token')
             if (token) {
                 try {
                     const storeRes = await current_store()
+
                     if (storeRes) {
                         setStore(storeRes)
                         return
@@ -114,6 +112,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             }
 
             const nearestStore = await fetchNearestStore()
+            console.log(nearestStore, 103);
+
             if (!nearestStore) {
                 Taro.showToast({ title: '附近暂无可用门店', icon: 'none' })
                 return

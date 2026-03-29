@@ -437,6 +437,8 @@ export const cancel_runner_order = async (id: string, data?: any): Promise<any> 
  * 接口功能：current_store，获取用户当前已选择门店
  */
 export const current_store = async (): Promise<any> => {
+  console.log(440);
+
   return request<any>('/stores/current', 'GET', undefined);
 };
 

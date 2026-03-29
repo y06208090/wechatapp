@@ -241,8 +241,8 @@ export default function Profile() {
           </>
         )}
       </View>
-
-      <View className="stats-card">
+      {/* 第一期不需要余额/优惠券/积分 */}
+      {/* <View className="stats-card">
         <View className="stat-item">
           <View className="value">{userInfo.balance.toFixed(2)}</View>
           <View className="label">余额(元)</View>
@@ -255,7 +255,7 @@ export default function Profile() {
           <View className="value">0</View>
           <View className="label">积分</View>
         </View>
-      </View>
+      </View> */}
 
       <View className="menu-list">
         {menuList.map((item, index) =>
@@ -333,11 +333,10 @@ export default function Profile() {
             </View>
 
             <Button
-              className={`confirm-btn ${
-                !draftNickname.trim() || !draftAvatar || saving
-                  ? 'disabled'
-                  : ''
-              }`}
+              className={`confirm-btn ${!draftNickname.trim() || !draftAvatar || saving
+                ? 'disabled'
+                : ''
+                }`}
               disabled={!draftNickname.trim() || !draftAvatar || saving}
               loading={saving}
               onClick={handleSaveProfile}
